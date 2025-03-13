@@ -1,9 +1,10 @@
 DROP TABLE IF EXISTS transactions;
 DROP TABLE IF EXISTS accounts;
 DROP TABLE IF EXISTS users;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -14,8 +15,8 @@ CREATE TABLE users (
 
 
 CREATE TABLE accounts (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id),
     name VARCHAR(100),
     balance FLOAT,
     type VARCHAR(100) NOT NULL,
@@ -23,8 +24,8 @@ CREATE TABLE accounts (
 );
 
 CREATE TABLE transactions (
-    id SERIAL PRIMARY KEY,
-    account_id INTEGER REFERENCES accounts(id),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    account_id UUID REFERENCES accounts(id),
     description VARCHAR NOT NULL,
     date DATE DEFAULT CURRENT_DATE NOT NULL,
     amount FLOAT,
