@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import bcrypt from "bcrypt";
 
 dotenv.config({ path: "../.env" });
 
@@ -10,6 +11,12 @@ const errorMessages = {
   409: "Conflict",
   422: "Unprocessable entity",
   500: "Internal server error",
+};
+
+export const hashPassword = async (password) => {
+  const salt = await bcrypt.genSalt(10);
+  const password_hash = await bcrypt.hash(password, salt);
+  return password_hash;
 };
 
 export const verifyData = (req, res, next) => {
@@ -29,12 +36,12 @@ export const verifyData = (req, res, next) => {
 };
 
 export const tokenRequired = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
+  const token = req.headers.authorization?.split(" ")[1] || req.cookies?.token;
   // req.headers["authorization"].split(" ")[1] ||
   // req.token.cookies?.access_token.split(" ")[1] ||
 
   if (!token) {
-    return res.status(401).json({ error: errorMessages[401] });
+    return res.status(401).json({ success: false, error: errorMessages[401] });
   }
 
   try {
@@ -42,6 +49,23 @@ export const tokenRequired = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (err) {
-    return res.status(401).json({ error: "Expired or invalid token" });
+    return res
+      .status(401)
+      .json({ success: false, error: "Expired or invalid token" });
+  }
+};
+
+export const generateToken = (email, id) => {
+  try {
+    const privateKey = process.env.SECRET_KEY;
+    const access_token = jwt.sign({ email: email, id: id }, privateKey, {
+      algorithm: "HS256",
+      expiresIn: "3d",
+    });
+
+    return access_token;
+  } catch (err) {
+    console.error("error: ", err);
+    return "";
   }
 };

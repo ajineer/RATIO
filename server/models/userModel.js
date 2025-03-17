@@ -1,7 +1,6 @@
 import { DataTypes } from "sequelize";
-import bcrypt from "bcrypt";
 import sequelize from "../db.js";
-import { v4 as UUIDV4 } from "uuid";
+import { hashPassword } from "../middleware/utils.js";
 
 const User = sequelize.define(
   "user",
@@ -36,16 +35,16 @@ const User = sequelize.define(
     hooks: {
       beforeCreate: async (user) => {
         console.log("hashing password for user: ", user.email);
-        const salt = await bcrypt.genSalt(10);
-        user.password_hash = await bcrypt.hash(user.password_hash, salt);
+        user.password_hash = await hashPassword(user.password_hash);
+        console.log("password hashed");
+      },
+      beforeUpdate: async (user) => {
+        console.log("hashing password for user: ", user.email);
+        user.password_hash = await hashPassword(user.password_hash);
         console.log("password hashed");
       },
     },
   }
 );
-
-User.prototype.isPasswordValid = async function (password) {
-  return bcrypt.compare(password, this.password_hash);
-};
 
 export default User;

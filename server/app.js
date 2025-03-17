@@ -4,6 +4,8 @@ import dotenv from "dotenv";
 import cors from "cors";
 import { corsOptions } from "./config/corsOptions.js";
 import sequelize from "./db.js";
+import cookieParser from "cookie-parser";
+import "./models/associations.js";
 dotenv.config();
 
 const app = express();
@@ -15,6 +17,7 @@ sequelize
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use(cors(corsOptions));
 app.use((req, res, next) => {
   console.log("request: ", req.method, req.url);
