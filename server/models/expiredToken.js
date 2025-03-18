@@ -1,8 +1,9 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../db.js";
+import User from "./userModel.js";
 
-const oldPassword = sequelize.define(
-  "old_password",
+const expiredToken = sequelize.define(
+  "expired_token",
   {
     id: {
       primaryKey: true,
@@ -19,7 +20,7 @@ const oldPassword = sequelize.define(
       },
       onDelete: "CASCADE",
     },
-    old_password: {
+    token: {
       type: DataTypes.STRING,
       allowNull: false,
     },
@@ -31,4 +32,4 @@ const oldPassword = sequelize.define(
   }
 );
 
-export default oldPassword;
+export default expiredToken;

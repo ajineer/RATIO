@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS transactions;
 DROP TABLE IF EXISTS accounts;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS old_passwords;
+DROP TABLE IF EXISTS expired_tokens;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE users (
@@ -46,6 +47,17 @@ CREATE TABLE old_passwords (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE expired_tokens (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    token TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_expired_tokens_token ON expired_tokens(token);
 
 
 

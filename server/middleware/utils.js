@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
+import expiredToken from "../models/expiredToken.js";
 
 dotenv.config({ path: "../.env" });
 
@@ -35,7 +36,7 @@ export const verifyData = (req, res, next) => {
   next();
 };
 
-export const tokenRequired = (req, res, next) => {
+export const tokenRequired = async (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1] || req.cookies?.token;
   // req.headers["authorization"].split(" ")[1] ||
   // req.token.cookies?.access_token.split(" ")[1] ||
@@ -45,13 +46,16 @@ export const tokenRequired = (req, res, next) => {
   }
 
   try {
+    const isExpired = await expiredToken.findOne({ where: { token } });
+    if (isExpired) {
+      return res.status(401).json({ error: "Token has expired" });
+    }
+
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
     req.user = decoded;
     next();
   } catch (err) {
-    return res
-      .status(401)
-      .json({ success: false, error: "Expired or invalid token" });
+    return res.status(401).json({ success: false, error: "Invalid token" });
   }
 };
 

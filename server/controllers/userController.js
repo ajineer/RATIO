@@ -2,7 +2,9 @@ import dotenv from "dotenv";
 import User from "../models/userModel.js";
 import oldPassword from "../models/oldPassword.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import { generateToken } from "../middleware/utils.js";
+import expiredToken from "../models/expiredToken.js";
 
 dotenv.config();
 
@@ -64,7 +66,17 @@ export const login = async (req, res) => {
         .json({ success: false, error: "Incorrect email or password" });
     }
 
+    if (user.token) {
+      await expiredToken.create({
+        token: user.token,
+        user_id: user.id,
+      });
+    }
+
     const token = generateToken(user.email, user.id);
+    user.token = token;
+    await user.save();
+
     res.cookie("token", token, {
       httpOnly: true,
       secure: false,
@@ -83,6 +95,37 @@ export const login = async (req, res) => {
       .status(500)
       .json({ success: false, error: "Internal server error" });
   }
+};
+
+export const logout = async (req, res) => {
+  const token = req.cookies.token;
+
+  if (token) {
+    try {
+      const userID = jwt.verify(token, process.env.SECRET_KEY);
+      if (!userID) {
+        return res.status(400).json({ error: "User could not be found" });
+      }
+      const expired_token = await expiredToken.create({
+        token: token,
+        user_id: userID.id,
+      });
+      if (!expired_token) {
+        return res.status(500).json({ error: "token could not be verified" });
+      }
+
+      res.cookie("token", "", {
+        httpOnly: true,
+        expires: new Date(0),
+        sameSite: "Strict",
+      });
+      res.clearCookie("token");
+      return res.status(200).json({ message: "User logged out" });
+    } catch (error) {
+      return res.status(500).json({ error: `Somthing went wrong: ${error}` });
+    }
+  }
+  return res.status(400).json({ error: "No token found" });
 };
 
 export const resetPassword = async (req, res) => {
@@ -128,16 +171,6 @@ export const resetPassword = async (req, res) => {
       });
     }
 
-    const matchOldPassword = await bcrypt.compare(
-      new_password,
-      user.password_hash
-    );
-    if (matchOldPassword) {
-      return res.status(401).json({
-        error: "New password cannot be your current password",
-      });
-    }
-
     // Update the user's password
     await user.update({
       password_hash: new_password,
@@ -159,15 +192,3 @@ export const resetPassword = async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
-// 1: password123 *
-// 2: password234 *
-// 3: password456 *
-// 4: password567 *
-// 5: password678 *
-// 6: password789 *
-// 7: password8910 *
-// 8: password91011 *
-// 9: password101112 *
-// 10: password111213 *
-// 11: password121314 *
-// 12: password123 *
