@@ -15,4 +15,4 @@ export const router = express.Router();
 router.post("/signup", verifyData, signup);
 router.post("/login", verifyData, login);
 router.post("/logout", tokenRequired, logout);
-router.patch("/password_reset", verifyData, tokenRequired, resetPassword);
+router.patch("/password_reset/:id", verifyData, tokenRequired, resetPassword);

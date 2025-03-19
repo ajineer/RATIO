@@ -11,6 +11,7 @@ CREATE TABLE users (
     last_name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
+    active_token TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -19,24 +20,29 @@ CREATE TABLE users (
 CREATE TABLE accounts (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID, 
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    name VARCHAR(100),
-    balance FLOAT,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL,
+    balance FLOAT NOT NULL,
     type VARCHAR(100) NOT NULL,
-    description VARCHAR(100) NOT NULL
+    description VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE transactions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     account_id UUID,
     FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE,
+    amount FLOAT NOT NULL,
     description VARCHAR NOT NULL,
-    date DATE DEFAULT CURRENT_DATE NOT NULL,
-    amount FLOAT,
+    date_posted DATE DEFAULT CURRENT_DATE NOT NULL,
+    status VARCHAR(100) NOT NULL,
+    recurring BOOLEAN NOT NULL,
     due_date DATE,
-    recurring BOOLEAN,
-    recur_freq INT,
-    paid BOOLEAN
+    next_due_date DATE,
+    recur_freq VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE old_passwords (

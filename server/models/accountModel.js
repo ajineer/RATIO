@@ -1,8 +1,8 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../db.js";
 
-const expiredToken = sequelize.define(
-  "expired_token",
+const Account = sequelize.define(
+  "accounts",
   {
     id: {
       primaryKey: true,
@@ -17,11 +17,23 @@ const expiredToken = sequelize.define(
         model: "users",
         key: "id",
       },
-      onDelete: "CASCADE",
     },
-    token: {
-      type: DataTypes.STRING,
+    name: {
       allowNull: false,
+      type: DataTypes.STRING,
+    },
+    balance: {
+      allowNull: false,
+      type: DataTypes.FLOAT,
+      defaultValue: 0,
+    },
+    type: {
+      allowNull: false,
+      type: DataTypes.STRING,
+    },
+    description: {
+      allowNull: true,
+      type: DataTypes.STRING,
     },
   },
   {
@@ -31,4 +43,4 @@ const expiredToken = sequelize.define(
   }
 );
 
-export default expiredToken;
+export default Account;

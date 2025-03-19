@@ -38,14 +38,12 @@ const User = sequelize.define(
     updatedAt: "updated_at",
     hooks: {
       beforeCreate: async (user) => {
-        console.log("hashing password for user: ", user.email);
         user.password_hash = await hashPassword(user.password_hash);
-        console.log("password hashed");
       },
       beforeUpdate: async (user) => {
-        console.log("hashing password for user: ", user.email);
-        user.password_hash = await hashPassword(user.password_hash);
-        console.log("password hashed");
+        if (user.changed("password_hash")) {
+          user.password_hash = await hashPassword(user.password_hash);
+        }
       },
     },
   }

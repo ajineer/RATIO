@@ -66,15 +66,15 @@ export const login = async (req, res) => {
         .json({ success: false, error: "Incorrect email or password" });
     }
 
-    if (user.token) {
+    if (user.active_token) {
       await expiredToken.create({
-        token: user.token,
+        token: user.active_token,
         user_id: user.id,
       });
     }
 
     const token = generateToken(user.email, user.id);
-    user.token = token;
+    user.active_token = token;
     await user.save();
 
     res.cookie("token", token, {
@@ -130,10 +130,10 @@ export const logout = async (req, res) => {
 
 export const resetPassword = async (req, res) => {
   try {
-    const { email, current_password, new_password } = req.body;
-
+    const { id } = req.params;
+    const { current_password, new_password } = req.body;
     // Find the user by email
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({ where: { id } });
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
