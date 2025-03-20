@@ -1,8 +1,9 @@
-import Account from "./accountModel.js";
-import expiredToken from "./expiredToken.js";
-import oldPassword from "./oldPassword.js";
-import Transaction from "./transactionModel.js";
-import User from "./userModel.js";
+import Account from "./Account.js";
+import expiredToken from "./ExpiredToken.js";
+import Invoice from "./Invoice.js";
+import oldPassword from "./OldPassword.js";
+import Transaction from "./Transaction.js";
+import User from "./User.js";
 
 User.hasMany(oldPassword, { foreignKey: "user_id", onDelete: "CASCADE" });
 oldPassword.belongsTo(User, { foreignKey: "user_id" });
@@ -15,3 +16,6 @@ Account.belongsTo(User, { foreignKey: "user_id", onDelete: "CASCADE" });
 
 Account.hasMany(Transaction, { foreignKey: "account_id", onDelete: "CASCADE" });
 Transaction.belongsTo(Account, { foreignKey: "account_id" });
+
+Account.hasOne(Invoice, { foreignKey: "account_id", onDelete: "CASCADE" });
+Invoice.belongsTo(Account, { foreignKey: "account_id" });

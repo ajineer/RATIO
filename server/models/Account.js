@@ -22,6 +22,11 @@ const Account = sequelize.define(
       allowNull: false,
       type: DataTypes.STRING,
     },
+    starting_balance: {
+      allowNull: true,
+      type: DataTypes.FLOAT,
+      defaultValue: 0,
+    },
     balance: {
       allowNull: false,
       type: DataTypes.FLOAT,

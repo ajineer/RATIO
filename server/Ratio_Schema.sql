@@ -3,6 +3,8 @@ DROP TABLE IF EXISTS accounts;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS old_passwords;
 DROP TABLE IF EXISTS expired_tokens;
+DROP TABLE IF EXISTS invoices;
+
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE users (
@@ -21,6 +23,8 @@ CREATE TABLE accounts (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID, 
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    invoice_id UUID,
+    FOREIGN KEY (invoice_id) REFERENCES invoices(id)
     name VARCHAR(100) NOT NULL,
     balance FLOAT NOT NULL,
     type VARCHAR(100) NOT NULL,
@@ -37,10 +41,6 @@ CREATE TABLE transactions (
     description VARCHAR NOT NULL,
     date_posted DATE DEFAULT CURRENT_DATE NOT NULL,
     status VARCHAR(100) NOT NULL,
-    recurring BOOLEAN NOT NULL,
-    due_date DATE,
-    next_due_date DATE,
-    recur_freq VARCHAR(100) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -59,6 +59,17 @@ CREATE TABLE expired_tokens (
     user_id UUID,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     token TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE invoices (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    account_id UUID,
+    FOREIGN KEY (account_id) REFERENCES accounts(id),
+    recurring BOOLEAN NOT NULL,
+    next_due_date DATE,
+    frequency VARCHAR(100) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

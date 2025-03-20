@@ -1,10 +1,10 @@
 import dotenv from "dotenv";
-import User from "../models/userModel.js";
-import oldPassword from "../models/oldPassword.js";
+import User from "../models/User.js";
+import oldPassword from "../models/OldPassword.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { generateToken } from "../middleware/utils.js";
-import expiredToken from "../models/expiredToken.js";
+import expiredToken from "../models/ExpiredToken.js";
 
 dotenv.config();
 

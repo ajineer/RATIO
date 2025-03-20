@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
-import expiredToken from "../models/expiredToken.js";
+import expiredToken from "../models/ExpiredToken.js";
 
 dotenv.config({ path: "../.env" });
 

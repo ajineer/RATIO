@@ -1,4 +1,4 @@
-import Account from "../models/accountModel.js";
+import Account from "../models/Account.js";
 
 export const get_accounts = async (req, res) => {
   const user = req.user;
@@ -16,13 +16,14 @@ export const get_accounts = async (req, res) => {
 };
 
 export const add_account = async (req, res) => {
-  const { name, balance, type, description } = req.body;
+  const { name, starting_balance, balance, type, description } = req.body;
   const user = req.user;
 
   try {
     const new_account = await Account.create({
       user_id: user.id,
       name: name,
+      starting_balance: starting_balance,
       balance: balance,
       type: type,
       description: description,
@@ -39,11 +40,11 @@ export const add_account = async (req, res) => {
 
 export const update_account = async (req, res) => {
   const { id } = req.params;
-  const { name, balance, type, description } = req.body;
+  const { name, type, description } = req.body;
 
   try {
     const [updated_rows] = await Account.update(
-      { name, balance, type, description },
+      { name, type, description },
       { where: { id } }
     );
 

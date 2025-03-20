@@ -10,14 +10,6 @@ const Transaction = sequelize.define(
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
     },
-    user_id: {
-      allowNull: false,
-      type: DataTypes.UUID,
-      references: {
-        model: "users",
-        key: "id",
-      },
-    },
     account_id: {
       allowNull: false,
       type: DataTypes.UUID,
@@ -42,23 +34,6 @@ const Transaction = sequelize.define(
       allowNull: false,
       type: DataTypes.STRING,
       defaultValue: "pending",
-    },
-    // Recurring part of transaction
-    recurring: {
-      allowNull: false,
-      type: DataTypes.BOOLEAN,
-    },
-    due_date: {
-      allowNull: true,
-      type: DataTypes.DATE,
-    },
-    next_due_date: {
-      allowNull: true,
-      type: DataTypes.DATE,
-    },
-    frequency: {
-      allowNull: false,
-      type: DataTypes.STRING,
     },
   },
   {
