@@ -29,6 +29,7 @@ const Transaction = sequelize.define(
     date_posted: {
       allowNull: false,
       type: DataTypes.DATE,
+      defaultValue: new Date(),
     },
     status: {
       allowNull: false,

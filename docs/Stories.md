@@ -17,7 +17,7 @@
 ### Invoices
 
 - User can view invoices of their accounts
-- User can edit an accounts invoice (allowed to edit: recurring, due date, and frequency)
+- User can edit an account's invoice (allowed to edit: paid status, amount, recurring, due date, and frequency)
 
 ### Transactions
 
