@@ -1,10 +1,12 @@
 import Account from "../models/Account.js";
+import Invoice from "../models/invoice.js";
 
 export const get_accounts = async (req, res) => {
   const user = req.user;
   try {
     const accounts = await Account.findAll({
       where: { user_id: user.id },
+      include: Invoice,
     });
     if (accounts.length === 0) {
       return res.status(404).json({ error: "No accounts found for this user" });

@@ -1,6 +1,6 @@
 import Account from "./Account.js";
 import expiredToken from "./ExpiredToken.js";
-import Invoice from "./Invoice.js";
+import Invoice from "./invoice.js";
 import oldPassword from "./OldPassword.js";
 import Transaction from "./Transaction.js";
 import User from "./User.js";

@@ -6,6 +6,7 @@ const Invoice = sequelize.define(
   {
     id: {
       primaryKey: true,
+      defaultValue: DataTypes.UUIDV4,
       type: DataTypes.UUID,
       allowNull: false,
     },
@@ -17,6 +18,15 @@ const Invoice = sequelize.define(
         key: "id",
       },
       unique: true,
+    },
+    paid: {
+      allowNull: false,
+      defaultValue: false,
+      type: DataTypes.BOOLEAN,
+    },
+    amount_due: {
+      allowNull: true,
+      type: DataTypes.FLOAT,
     },
     recurring: {
       allowNull: false,
@@ -35,6 +45,9 @@ const Invoice = sequelize.define(
     timestamps: true,
     createdAt: "created_at",
     updatedAt: "updated_at",
+    defaultScope: {
+      attributes: { exclude: ["account_id"] },
+    },
   }
 );
 

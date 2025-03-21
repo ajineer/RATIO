@@ -52,7 +52,6 @@ class RecurringBill {
         dueDate: nextDueDate,
         status: "pending",
       });
-
       nextDueDate = this.getNextDueDate();
     }
 
