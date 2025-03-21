@@ -48,22 +48,6 @@ export const pay_invoice = async (req, res) => {
   const { id } = req.params;
 
   try {
-    function delta_date() {
-      switch (invoice.frequency) {
-        case "monthly":
-          return addMonths(invoice.next_due_date, 1);
-        case "weekly":
-          return addWeeks(invoice.next_due_date, 1);
-        case "quarterly":
-          return addMonths(invoice.next_due_date, 3);
-        case "daily":
-          return addDays(invoice.next_due_date, 1);
-        case "annually":
-          return addYears(invoice.next_due_date, 1);
-        default:
-          throw new Error("Unknown frequency");
-      }
-    }
     const invoice = await Invoice.findOne({
       where: { id },
       attributes: [
@@ -94,19 +78,10 @@ export const pay_invoice = async (req, res) => {
     if (!new_transaction) {
       return res.status(500).json({ error: "Could not post payment" });
     }
-    const new_due_date = delta_date();
-    const [updated_rows] = await Invoice.update(
-      { paid: true, next_due_date: new_due_date },
-      { where: { id } }
-    );
-    if (!updated_rows) {
-      return res.status(404).json({ error: "Invoice not found" });
-    }
-    const updated_invoice = await Invoice.findOne({ where: { id } });
-    if (!updated_invoice) {
-      return res.status(404).json({ error: "Could not get updated invoice" });
-    }
-    return res.status(201).json({ updated_invoice });
+
+    await invoice.update({ paid: true }, { where: { id } });
+
+    return res.status(201).json({ invoice });
   } catch (error) {
     return res.status(500).json({ error: `Internal server error: ${error}` });
   }

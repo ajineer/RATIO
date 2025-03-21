@@ -1,18 +1,14 @@
 import Transaction from "../models/Transaction";
 
 export const add_transaction = async (req, res) => {
-  const { account_id, amount, description, recurring, due_date, frequency } =
-    req.body;
+  const { account_id, amount, description } = req.body;
 
   try {
-    const posted_date = new Date();
-
     const newTransaction = await Transaction.create({
       account_id: account_id,
       amount: amount,
       description: description,
-      date_posted: posted_date,
-      status: "pending",
+      status: "paid",
     });
 
     if (!newTransaction) {
