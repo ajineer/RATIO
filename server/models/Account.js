@@ -30,7 +30,6 @@ const Account = sequelize.define(
     balance: {
       allowNull: false,
       type: DataTypes.FLOAT,
-      defaultValue: 0,
     },
     type: {
       allowNull: false,
@@ -45,6 +44,11 @@ const Account = sequelize.define(
     timestamps: true,
     createdAt: "created_at",
     updatedAt: "updated_at",
+    hooks: {
+      beforeCreate: (account) => {
+        account.set("balance", account.starting_balance);
+      },
+    },
     defaultScope: {
       attributes: { exclude: ["user_id"] },
     },

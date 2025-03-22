@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../db.js";
+import Account from "./Account.js";
 
 const Transaction = sequelize.define(
   "transactions",
@@ -41,6 +42,20 @@ const Transaction = sequelize.define(
     timestamps: true,
     createdAt: "created_at",
     updatedAt: "updated_at",
+    hooks: {
+      afterCreate: async (transaction, options) => {
+        const account = await Account.findOne({
+          where: { id: transaction.account_id },
+        });
+        if (account) {
+          const updatedBalance = transaction.amount + account.balance;
+          await account.update({ balance: updatedBalance });
+        }
+      },
+    },
+    defaultScope: {
+      attributes: { exclude: "account_id" },
+    },
   }
 );
 

@@ -2,6 +2,7 @@ import express from "express";
 import { router as userRoutes } from "./routes/userRoutes.js";
 import { router as accountRoutes } from "./routes/accountRoutes.js";
 import { router as invoiceRoutes } from "./routes/invoiceRoutes.js";
+import { router as transactionRoutes } from "./routes/transactionRoutes.js";
 import dotenv from "dotenv";
 import cors from "cors";
 import { corsOptions } from "./config/corsOptions.js";
@@ -33,6 +34,7 @@ app.get("/", (req, res) => {
 app.use("/api/user", userRoutes);
 app.use("/api/accounts", accountRoutes);
 app.use("/api/invoices", invoiceRoutes);
+app.use("/api/transactions", transactionRoutes);
 
 const PORT = process.env.SERVER_PORT;
 app.listen(PORT, () => {
