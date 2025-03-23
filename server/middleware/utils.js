@@ -20,20 +20,16 @@ export const hashPassword = async (password) => {
   return password_hash;
 };
 
-export const verifyData = (req, res, next) => {
-  const data = req.body;
-  if (!data || Object.keys(data).length === 0) {
-    return res.status(400).json({ error: errorMessages[400] });
-  }
+export const validateRequest = (schema) => (req, res, next) => {
+  const { error } = schema.validate(req.body || req.params, {
+    abortEarly: false,
+  });
 
-  for (const [key, value] of Object.entries(data)) {
-    if (value === null || value === undefined) {
-      return res.status(400).json({ error: `key: ${key} is required` });
-    }
+  if (error) {
+    return res
+      .status(400)
+      .json({ errors: error.details.map((err) => err.message) });
   }
-
-  req.data = data;
-  next();
 };
 
 export const tokenRequired = async (req, res, next) => {

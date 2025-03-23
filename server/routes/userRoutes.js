@@ -6,13 +6,23 @@ import {
   resetPassword,
   signup,
 } from "../controllers/userController.js";
-import { tokenRequired, verifyData } from "../middleware/utils.js";
+import { tokenRequired, validateRequest } from "../middleware/utils.js";
+import {
+  loginUserSchema,
+  resetPaswwordSchema,
+  signupUserSchema,
+} from "../middleware/schemas.js";
 
 dotenv.config();
 
 export const router = express.Router();
 
-router.post("/signup", verifyData, signup);
-router.post("/login", verifyData, login);
+router.post("/signup", validateRequest(signupUserSchema), signup);
+router.post("/login", validateRequest(loginUserSchema), login);
 router.post("/logout", tokenRequired, logout);
-router.patch("/password_reset/:id", verifyData, tokenRequired, resetPassword);
+router.patch(
+  "/password_reset/:id",
+  tokenRequired,
+  validateRequest(resetPaswwordSchema),
+  resetPassword
+);

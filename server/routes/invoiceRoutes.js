@@ -6,13 +6,39 @@ import {
   pay_invoice,
   update_invoice,
 } from "../controllers/invoiceController.js";
-import { tokenRequired, verifyData } from "../middleware/utils.js";
+import { tokenRequired, validateRequest } from "../middleware/utils.js";
+import {
+  addInvoiceSchema,
+  getFutureInvoicesSchema,
+  payInvoiceSchema,
+  updateInvoiceSchema,
+} from "../middleware/schemas.js";
 
 dotenv.config();
 
 export const router = express.Router();
 
-router.post("/add_invoice", tokenRequired, verifyData, add_invoice);
-router.post("/get_invoices", tokenRequired, verifyData, get_future_invoices);
-router.patch("/update_invoice/:id", tokenRequired, verifyData, update_invoice);
-router.patch("/pay_invoice/:id", tokenRequired, pay_invoice);
+router.post(
+  "/add_invoice",
+  tokenRequired,
+  validateRequest(addInvoiceSchema),
+  add_invoice
+);
+router.post(
+  "/get_invoices/:account_id",
+  tokenRequired,
+  validateRequest(getFutureInvoicesSchema),
+  get_future_invoices
+);
+router.patch(
+  "/update_invoice/:id",
+  tokenRequired,
+  validateRequest(updateInvoiceSchema),
+  update_invoice
+);
+router.patch(
+  "/pay_invoice/:id",
+  tokenRequired,
+  validateRequest(payInvoiceSchema),
+  pay_invoice
+);

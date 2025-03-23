@@ -43,7 +43,7 @@ const Invoice = sequelize.define(
       type: DataTypes.BOOLEAN,
     },
     amount_due: {
-      allowNull: true,
+      allowNull: false,
       type: DataTypes.FLOAT,
     },
     recurring: {

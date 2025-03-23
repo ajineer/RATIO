@@ -87,7 +87,7 @@ export const pay_invoice = async (req, res) => {
 };
 
 export const get_future_invoices = async (req, res) => {
-  const { account_id } = req.body;
+  const { account_id } = req.params;
 
   try {
     const invoice = await Invoice.findOne({ where: { account_id } });

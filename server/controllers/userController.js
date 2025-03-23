@@ -131,7 +131,7 @@ export const logout = async (req, res) => {
 export const resetPassword = async (req, res) => {
   try {
     const { id } = req.params;
-    const { current_password, new_password } = req.body;
+    const { current_password, new_password, confirm_password } = req.body;
     // Find the user by email
     const user = await User.findOne({ where: { id } });
 
