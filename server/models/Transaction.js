@@ -43,19 +43,34 @@ const Transaction = sequelize.define(
     createdAt: "created_at",
     updatedAt: "updated_at",
     hooks: {
-      afterCreate: async (transaction, options) => {
+      afterCreate: async (transaction) => {
         const account = await Account.findOne({
           where: { id: transaction.account_id },
         });
         if (account) {
-          const updatedBalance = transaction.amount + account.balance;
+          const updatedBalance = account.balance + transaction.amount;
           await account.update({ balance: updatedBalance });
         }
       },
+      beforeUpdate: async (transaction) => {
+        if (
+          transaction.changed("status") &&
+          transaction.status === "reversed"
+        ) {
+          const account = await Account.findOne({
+            where: { id: transaction.account_id },
+          });
+          if (account) {
+            await account.update({
+              balance: account.balance - transaction.amount,
+            });
+          }
+        }
+      },
     },
-    defaultScope: {
-      attributes: { exclude: "account_id" },
-    },
+    // defaultScope: {
+    //   attributes: { exclude: "account_id" },
+    // },
   }
 );
 

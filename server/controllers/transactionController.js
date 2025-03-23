@@ -1,4 +1,5 @@
 import Transaction from "../models/Transaction.js";
+import { getHours } from "date-fns";
 
 export const get_transactions = async (req, res) => {
   const { id } = req.params;
@@ -38,4 +39,26 @@ export const add_transaction = async (req, res) => {
   }
 };
 
-// export const update_transaction = async (req, res) => {};
+export const reverse_transaction = async (req, res) => {
+  const { id } = req.params;
+  // return res.status(200).json(id);
+
+  try {
+    const transaction = await Transaction.findOne({
+      where: { id: id },
+      // attributes: ["id"],
+    });
+    const hours_created = getHours(transaction.created_at);
+    const hours_now = getHours(new Date());
+    if (hours_now - hours_created > 24) {
+      return res
+        .status(400)
+        .json({ error: "Cannot reverse this transaction now" });
+    }
+    transaction.status = "reversed";
+    await transaction.save();
+    return res.status(201).json({ transaction });
+  } catch (error) {
+    return res.status(500).json({ error: `Internal server error: ${error}` });
+  }
+};
