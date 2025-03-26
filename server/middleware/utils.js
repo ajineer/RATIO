@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import expiredToken from "../models/ExpiredToken.js";
+import User from "../models/User.js";
 
 dotenv.config({ path: "../.env" });
 
@@ -30,6 +31,7 @@ export const validateRequest = (schema) => (req, res, next) => {
       .status(400)
       .json({ errors: error.details.map((err) => err.message) });
   }
+  next();
 };
 
 export const tokenRequired = async (req, res, next) => {
@@ -40,19 +42,44 @@ export const tokenRequired = async (req, res, next) => {
   }
 
   try {
-    const isExpired = await expiredToken.findOne({ where: { token } });
-    if (isExpired) {
-      return res.status(401).json({ error: "Token has expired" });
-    }
-
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
     req.user = decoded;
+    const id = req.user.id;
+    const user = await User.findOne({ where: { id: id } });
+    // console.log("look here: ", user.active_token, "\n", token);
+    if (!user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    if (user.active_token !== token) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
     next();
-  } catch (err) {
+  } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ error: "Token has expired" });
+    }
     return res.status(401).json({ success: false, error: "Invalid token" });
   }
 };
 
+export const revokeToken = async (req, res) => {
+  const { id } = req.params;
+  const token = req.cookies.token;
+  const expired_token = await expiredToken.create({
+    token: token,
+    user_id: id,
+  });
+  if (!expired_token) {
+    return res.status(500).json({ error: "token could not be verified" });
+  }
+
+  res.cookie("token", "", {
+    httpOnly: true,
+    expires: new Date(0),
+    sameSite: "Strict",
+  });
+  res.clearCookie("token");
+};
 export const generateToken = (email, id) => {
   try {
     const privateKey = process.env.SECRET_KEY;

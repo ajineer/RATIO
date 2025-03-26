@@ -1,5 +1,5 @@
 import Transaction from "../models/Transaction.js";
-import { getHours } from "date-fns";
+import { differenceInHours, getHours } from "date-fns";
 
 export const get_transactions = async (req, res) => {
   const { id } = req.params;
@@ -20,14 +20,14 @@ export const get_transactions = async (req, res) => {
   }
 };
 export const add_transaction = async (req, res) => {
-  const { account_id, amount, description } = req.body;
+  const { account_id, amount, description, status } = req.body;
 
   try {
     const new_transaction = await Transaction.create({
       account_id: account_id,
       amount: amount,
       description: description,
-      status: "paid",
+      status: status,
     });
 
     if (!new_transaction) {
@@ -48,9 +48,8 @@ export const reverse_transaction = async (req, res) => {
       where: { id: id },
       // attributes: ["id"],
     });
-    const hours_created = getHours(transaction.created_at);
-    const hours_now = getHours(new Date());
-    if (hours_now - hours_created > 24) {
+    const difference = differenceInHours(new Date(), transaction.created_at);
+    if (difference > 24) {
       return res
         .status(400)
         .json({ error: "Cannot reverse this transaction now" });

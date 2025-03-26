@@ -19,7 +19,7 @@ export const router = express.Router();
 
 router.post("/signup", validateRequest(signupUserSchema), signup);
 router.post("/login", validateRequest(loginUserSchema), login);
-router.post("/logout", tokenRequired, logout);
+router.post("/logout/:id", tokenRequired, logout);
 router.patch(
   "/password_reset/:id",
   tokenRequired,

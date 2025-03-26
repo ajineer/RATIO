@@ -27,6 +27,7 @@ export const signupUserSchema = Joi.object({
       anyinvalid:
         "Password must be at least 8 characters long, include 1 uppercase letter, 1 number, and 1 special character.",
     }),
+  confirm_password: Joi.string().valid(Joi.ref("password")),
 });
 
 export const loginUserSchema = Joi.object({
@@ -40,7 +41,6 @@ export const loginUserSchema = Joi.object({
 });
 
 export const resetPaswwordSchema = Joi.object({
-  id: Joi.string().uuid().required(),
   current_password: Joi.string().required(),
   new_password: Joi.string()
     .custom((value, helpers) => {
@@ -75,28 +75,21 @@ export const resetPaswwordSchema = Joi.object({
 
 export const addAccountSchema = Joi.object({
   name: Joi.string().required(),
-  type: Joi.string().valid("checking", "savings", "credit", "loan").required(),
+  type: Joi.string()
+    .valid("checking", "savings", "credit", "loan", "bill")
+    .required(),
   description: Joi.string().optional(),
   starting_balance: Joi.number().precision(2).min(0).required(),
   balance: Joi.number().precision(2).min(0).required(),
 });
 
 export const updateAccountSchema = Joi.object({
-  id: Joi.string().uuid().required(),
   name: Joi.string().required(),
   type: Joi.string().valid("checking", "savings", "credit", "loan").required(),
   description: Joi.string().optional(),
 });
 
-export const deleteAccountSchema = Joi.object({
-  id: Joi.string().uuid().required(),
-});
-
 // invoice controller schema
-
-export const getFutureInvoicesSchema = Joi.object({
-  account_id: Joi.string().uuid().required(),
-});
 
 export const addInvoiceSchema = Joi.object({
   account_id: Joi.string().uuid().required(),
@@ -109,7 +102,6 @@ export const addInvoiceSchema = Joi.object({
 });
 
 export const updateInvoiceSchema = Joi.object({
-  id: Joi.string().uuid().required(),
   amount_due: Joi.number().precision(2).min(0).required(),
   recurring: Joi.boolean().required(),
   next_due_date: Joi.date().required(),
@@ -118,19 +110,11 @@ export const updateInvoiceSchema = Joi.object({
     .required(),
 });
 
-export const payInvoiceSchema = Joi.object({
-  id: Joi.string().uuid().required(),
-});
-
 // transaction controller schemas
 
 export const addTransactionSchema = Joi.object({
   account_id: Joi.string().uuid().required(),
-  amount: Joi.number().required,
+  amount: Joi.number().required(),
   description: Joi.string().optional(),
   status: Joi.string().valid("pending", "completed", "reversed").required(),
-});
-
-export const reverseTransactionSchema = Joi.object({
-  id: Joi.string().uuid().required(),
 });

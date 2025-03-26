@@ -9,7 +9,6 @@ import {
 } from "../controllers/accountController.js";
 import {
   addAccountSchema,
-  deleteAccountSchema,
   updateAccountSchema,
 } from "../middleware/schemas.js";
 
@@ -30,9 +29,4 @@ router.patch(
   validateRequest(updateAccountSchema),
   update_account
 );
-router.delete(
-  "/delete_account/:id",
-  tokenRequired,
-  validateRequest(deleteAccountSchema),
-  delete_account
-);
+router.delete("/delete_account/:id", tokenRequired, delete_account);

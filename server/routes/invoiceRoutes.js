@@ -9,8 +9,6 @@ import {
 import { tokenRequired, validateRequest } from "../middleware/utils.js";
 import {
   addInvoiceSchema,
-  getFutureInvoicesSchema,
-  payInvoiceSchema,
   updateInvoiceSchema,
 } from "../middleware/schemas.js";
 
@@ -24,21 +22,11 @@ router.post(
   validateRequest(addInvoiceSchema),
   add_invoice
 );
-router.post(
-  "/get_invoices/:account_id",
-  tokenRequired,
-  validateRequest(getFutureInvoicesSchema),
-  get_future_invoices
-);
+router.post("/get_invoices/:account_id", tokenRequired, get_future_invoices);
 router.patch(
   "/update_invoice/:id",
   tokenRequired,
   validateRequest(updateInvoiceSchema),
   update_invoice
 );
-router.patch(
-  "/pay_invoice/:id",
-  tokenRequired,
-  validateRequest(payInvoiceSchema),
-  pay_invoice
-);
+router.patch("/pay_invoice/:id", tokenRequired, pay_invoice);

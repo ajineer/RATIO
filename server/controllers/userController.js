@@ -3,18 +3,22 @@ import User from "../models/User.js";
 import oldPassword from "../models/OldPassword.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { generateToken } from "../middleware/utils.js";
+import { generateToken, revokeToken } from "../middleware/utils.js";
 import expiredToken from "../models/ExpiredToken.js";
 
 dotenv.config();
 
 export const signup = async (req, res) => {
   try {
-    const { first_name, last_name, email, password } = req.body;
+    const { first_name, last_name, email, password, confirm_password } =
+      req.body;
 
     const userExists = await User.findOne({ where: { email } });
     if (userExists) {
       return res.status(401).json({ error: "Email already in use" });
+    }
+    if (password !== confirm_password) {
+      return res.status(401).json({ error: "Passwords must match" });
     }
 
     const newUser = await User.create({
@@ -36,9 +40,8 @@ export const signup = async (req, res) => {
     return res.status(201).json({
       message: "User created successfully, please login",
     });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: err });
+  } catch (error) {
+    return res.status(500).json({ error: `Internal server error: ${error}` });
   }
 };
 
@@ -106,20 +109,8 @@ export const logout = async (req, res) => {
       if (!userID) {
         return res.status(400).json({ error: "User could not be found" });
       }
-      const expired_token = await expiredToken.create({
-        token: token,
-        user_id: userID.id,
-      });
-      if (!expired_token) {
-        return res.status(500).json({ error: "token could not be verified" });
-      }
+      await revokeToken(req, res);
 
-      res.cookie("token", "", {
-        httpOnly: true,
-        expires: new Date(0),
-        sameSite: "Strict",
-      });
-      res.clearCookie("token");
       return res.status(200).json({ message: "User logged out" });
     } catch (error) {
       return res.status(500).json({ error: `Somthing went wrong: ${error}` });
@@ -186,6 +177,7 @@ export const resetPassword = async (req, res) => {
         old_password: user.password_hash,
       });
     }
+    revokeToken(req, res);
     return res.status(200).json({ message: "Password updated successfully" });
   } catch (error) {
     console.error(error);

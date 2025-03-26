@@ -6,10 +6,7 @@ import {
   reverse_transaction,
 } from "../controllers/transactionController.js";
 import { tokenRequired, validateRequest } from "../middleware/utils.js";
-import {
-  addTransactionSchema,
-  reverseTransactionSchema,
-} from "../middleware/schemas.js";
+import { addTransactionSchema } from "../middleware/schemas.js";
 
 dotenv.config();
 
@@ -22,9 +19,4 @@ router.post(
   validateRequest(addTransactionSchema),
   add_transaction
 );
-router.patch(
-  "/reverse_transaction/:id",
-  tokenRequired,
-  validateRequest(reverseTransactionSchema),
-  reverse_transaction
-);
+router.patch("/reverse_transaction/:id", tokenRequired, reverse_transaction);
