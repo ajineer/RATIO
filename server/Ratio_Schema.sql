@@ -5,10 +5,8 @@ DROP TABLE IF EXISTS old_passwords;
 DROP TABLE IF EXISTS expired_tokens;
 DROP TABLE IF EXISTS invoices;
 
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -20,58 +18,61 @@ CREATE TABLE users (
 
 
 CREATE TABLE accounts (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID, 
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    invoice_id UUID,
-    FOREIGN KEY (invoice_id) REFERENCES invoices(id)
+    id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+    user_id TEXT, 
+    invoice_id TEXT,
     name VARCHAR(100) NOT NULL,
+    starting_balance FLOAT NOT NULL,
     balance FLOAT NOT NULL,
     type VARCHAR(100) NOT NULL,
     description VARCHAR(100) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (invoice_id) REFERENCES invoices(id)
 );
 
 CREATE TABLE transactions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    account_id UUID,
-    FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE,
+    id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+    account_id TEXT,
     amount FLOAT NOT NULL,
     description VARCHAR NOT NULL,
     date_posted DATE DEFAULT CURRENT_DATE NOT NULL,
     status VARCHAR(100) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
 );
 
 CREATE TABLE old_passwords (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+    user_id TEXT,
     old_password VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE expired_tokens (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+    user_id TEXT,
     token TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE invoices (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    account_id UUID,
-    FOREIGN KEY (account_id) REFERENCES accounts(id),
+    id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+    account_id TEXT,
+    paid BOOLEAN NOT NULL,
+    amount_due FLOAT,
     recurring BOOLEAN NOT NULL,
     next_due_date DATE,
     frequency VARCHAR(100) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (account_id) REFERENCES accounts(id)
 );
 
 CREATE INDEX idx_expired_tokens_token ON expired_tokens(token);

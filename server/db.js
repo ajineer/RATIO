@@ -1,24 +1,41 @@
 import dotenv from "dotenv";
 import { Sequelize } from "sequelize";
+import { config } from "./config/dbConfig.js";
 
 dotenv.config();
 
-const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASSWORD,
+const environment = process.env.NODE_ENV || "development";
+const dbConfig = config[environment];
+console.log("config: ", dbConfig);
+const dialect = {
+  test: "sqlite",
+  development: "postgres",
+};
+const testEnv = {
+  port: dbConfig.port,
+  host: dbConfig.host,
+  dialect: "sqlite",
+  storage: ":memory",
+  logging: console.log,
+};
+
+const devEnv =
+  (dbConfig.database,
+  dbConfig.username,
+  dbConfig.password,
   {
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    dialect: "postgres",
-    logging: console.log,
-    timezone: "America/Denver",
-  }
-);
+    host: dbConfig.DB_HOST,
+    port: dbConfig.DB_PORT,
+    dialect: dialect["test"],
+    logging: dbConfig?.logging,
+    timezone: dbConfig?.timezone || null,
+  });
+
+const sequelize = new Sequelize(testEnv);
 
 sequelize
   .authenticate()
-  .then(() => console.log("Connected to PostgreSQL"))
+  .then(() => console.log(`Connected to ${dbConfig.dialect}`))
   .catch((err) => console.error("Connection error: ", err));
 
 export default sequelize;
