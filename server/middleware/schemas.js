@@ -4,8 +4,30 @@ import validator from "validator";
 // user controller schemas
 
 export const signupUserSchema = Joi.object({
-  first_name: Joi.string().required(),
-  last_name: Joi.string().required(),
+  first_name: Joi.string()
+    .trim()
+    .min(2)
+    .max(50)
+    .regex(/^[A-Za-z]+(?: [A-Za-z]+)*$/)
+    .required()
+    .messages({
+      "string.empty": "First name cannot be empty",
+      "string.min": "First name must be at least 2 characters long",
+      "string.max": "First name cannot exceed 50 characters",
+      "string.pattern.base": "First name can only contain letters and spaces",
+    }),
+  last_name: Joi.string()
+    .trim()
+    .min(2)
+    .max(50)
+    .regex(/^[A-Za-z]+(?: [A-Za-z]+)*$/)
+    .required()
+    .messages({
+      "string.empty": "First name cannot be empty",
+      "string.min": "First name must be at least 2 characters long",
+      "string.max": "First name cannot exceed 50 characters",
+      "string.pattern.base": "First name can only contain letters and spaces",
+    }),
   email: Joi.string().email().required(),
   password: Joi.string()
     .custom((value, helpers) => {
@@ -31,11 +53,13 @@ export const signupUserSchema = Joi.object({
 });
 
 export const loginUserSchema = Joi.object({
-  email: Joi.string().email().required().messages({
+  email: Joi.string().email().required().empty("").messages({
+    "string.empty": "Email is required",
     "string.email": "Invalid email format.",
     "any.required": "Email is required",
   }),
-  password: Joi.string().required().messages({
+  password: Joi.string().required().empty("").messages({
+    "string.empty": "Password is required",
     "any.required": "Password is required",
   }),
 });
@@ -74,7 +98,18 @@ export const resetPaswwordSchema = Joi.object({
 //account controller schemas
 
 export const addAccountSchema = Joi.object({
-  name: Joi.string().required(),
+  name: Joi.string()
+    .trim()
+    .min(2)
+    .max(50)
+    .regex(/^[A-Za-z]+(?: [A-Za-z]+)*$/)
+    .required()
+    .messages({
+      "string.empty": "First name cannot be empty",
+      "string.min": "First name must be at least 2 characters long",
+      "string.max": "First name cannot exceed 50 characters",
+      "string.pattern.base": "First name can only contain letters and spaces",
+    }),
   type: Joi.string()
     .valid("checking", "savings", "credit", "loan", "bill")
     .required(),
@@ -84,8 +119,21 @@ export const addAccountSchema = Joi.object({
 });
 
 export const updateAccountSchema = Joi.object({
-  name: Joi.string().required(),
-  type: Joi.string().valid("checking", "savings", "credit", "loan").required(),
+  name: Joi.string()
+    .trim()
+    .min(2)
+    .max(50)
+    .regex(/^[A-Za-z]+(?: [A-Za-z]+)*$/)
+    .required()
+    .messages({
+      "string.empty": "First name cannot be empty",
+      "string.min": "First name must be at least 2 characters long",
+      "string.max": "First name cannot exceed 50 characters",
+      "string.pattern.base": "First name can only contain letters and spaces",
+    }),
+  type: Joi.string()
+    .valid("checking", "savings", "credit", "loan", "bill")
+    .required(),
   description: Joi.string().optional(),
 });
 
@@ -114,7 +162,7 @@ export const updateInvoiceSchema = Joi.object({
 
 export const addTransactionSchema = Joi.object({
   account_id: Joi.string().uuid().required(),
-  amount: Joi.number().required(),
+  amount: Joi.number().required().precision(2).min(0).required(),
   description: Joi.string().optional(),
   status: Joi.string().valid("pending", "completed", "reversed").required(),
 });

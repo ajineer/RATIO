@@ -15,7 +15,7 @@ export const signup = async (req, res) => {
 
     const userExists = await User.findOne({ where: { email } });
     if (userExists) {
-      return res.status(401).json({ error: "Email already in use" });
+      return res.status(409).json({ error: "Email already in use" });
     }
     if (password !== confirm_password) {
       return res.status(401).json({ error: "Passwords must match" });
@@ -93,7 +93,6 @@ export const login = async (req, res) => {
       user: { id: user.id, email: email },
     });
   } catch (error) {
-    console.error("Login error: ", error);
     return res
       .status(500)
       .json({ success: false, error: "Internal server error" });

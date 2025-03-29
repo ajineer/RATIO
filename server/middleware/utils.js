@@ -94,3 +94,31 @@ export const generateToken = (email, id) => {
     return "";
   }
 };
+
+/**
+ *
+ * @param {Object} validObject - The valid request body.
+ * @param {Array} transformations - Functions to modify fields for invalid cases.
+ * @returns {Array} - Array of invalid objects with descriptions.
+ */
+
+export const generateInvalidCases = (validObject, transformations) => {
+  const cases = [];
+
+  Object.keys(validObject).forEach((key) => {
+    transformations.forEach((transform) => {
+      const invalidData = {
+        ...validObject,
+        [key]: transform(validObject[key]),
+      };
+      const invalidUserCase = {
+        description: `${key} ${transform.name.replace(/_/g, " ")}`,
+        data: { ...invalidData },
+        expectedStatus: 400,
+      };
+      cases.push({ ...invalidUserCase });
+    });
+  });
+
+  return cases;
+};
