@@ -6,7 +6,7 @@ export const config = {
   development: {
     dialect: "postgres",
     host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
+    port: process.env.POSTGRES_DB_PORT,
     database: process.env.DB_NAME,
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
@@ -14,10 +14,10 @@ export const config = {
     timezone: "America/Denver",
   },
   test: {
-    port: process.env.DB_PORT,
-    host: process.env.DB_HOST,
     dialect: "sqlite",
-    storage: ":memory",
+    host: process.env.DB_HOST,
+    port: process.env.SQLITE_DB_PORT,
+    storage: "./ratio.db",
     logging: console.log,
   },
 };

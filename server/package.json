@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "NODE_ENV=test vitest",
+    "dev": "NODE_ENV=development node app.js",
+    "eval": "NODE_ENV=test node app.js",
     "start": "node app.js"
   },
   "author": "",

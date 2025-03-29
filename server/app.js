@@ -36,7 +36,11 @@ app.use("/api/accounts", accountRoutes);
 app.use("/api/invoices", invoiceRoutes);
 app.use("/api/transactions", transactionRoutes);
 
-const PORT = process.env.SERVER_PORT;
+const PORT =
+  process.env.NODE_ENV === "development"
+    ? process.env.POSTGRES_SERVER_PORT
+    : process.env.SQLITE_SERVER_PORT;
+
 app.listen(PORT, () => {
   console.log("Server is running on port: ", `${PORT}`);
 });
