@@ -4,31 +4,42 @@
 
 tests/
 │── unit/
-│ ├── validation.test.js (Joi Schema tests)
-│ ├── auth.test.js (Login & token tests)
+│ ├── schemaTests.test.js
+│ │ ├── user signup schema
+│ │ ├── user login schema
+│ │ ├── reset password schema
+│ │ ├── add account schema
+│ │ ├── update account schema
+│ │ ├── add invoice schema
+│ │ ├── update invoice schema
+│ │ ├── add transaction schema
+│ ├── middleware.test.js
+│ │ ├── token generation
+│ │ ├── token validation
+│ │ ├── token revoking
+│ │ ├── hashing password
 │ ├── controllers.test.js (Business logic tests)
-│ │ ├── userController
-│ │ ├── signup
-│ │ ├── login
-│ │ ├── logout
-│ │ ├── reset password
-│ ├── accountController
-│ │ ├── retrieve accounts
-│ │ ├── create new account
-│ │ ├── update account
-│ │ ├── delete account
-│ ├── invoiceController
-│ │ ├── retrieve invoices
-│ │ ├── create new invoice
-│ │ ├── update invoice (freq, amount, next due date, recurring status)
-│ │ ├── pay invoice (amount, status, )
-│ ├── transactionController
-│ │ ├── retrieve transactions for an account
-│ │ ├── create a transaction on an account
-│ │ ├── reverse a transaction on an account
+│ │ │ ├── userControllerTest
+│ │ │ │ ├── signup
+│ │ │ │ ├── login
+│ │ │ │ ├── logout
+│ │ │ │ ├── reset password
+│ │ ├── accountController
+│ │ │ │ ├── retrieve accounts
+│ │ │ │ ├── create new account
+│ │ │ │ ├── update account
+│ │ │ │ ├── delete account
+│ │ ├── invoiceController
+│ │ │ │ ├── retrieve invoices
+│ │ │ │ ├── create new invoice
+│ │ │ │ ├── update invoice (freq, amount, next due date, recurring status)
+│ │ │ │ ├── pay invoice (amount, status, )
+│ │ ├── transactionController
+│ │ │ │ ├── retrieve transactions for an account
+│ │ │ │ ├── create a transaction on an account
+│ │ │ │ ├── reverse a transaction on an account
 │── integration/
 │ ├── userRoutes.test.js (API endpoint tests for signup and login)
-│ │ ├── post request
 │ │ ├── post request (sign up)
 │ │ ├── post request (login)
 │ │ ├── post request (logout)

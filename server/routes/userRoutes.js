@@ -6,11 +6,12 @@ import {
   resetPassword,
   signup,
 } from "../controllers/userController.js";
-import { tokenRequired, validateRequest } from "../middleware/utils.js";
+import { tokenRequired } from "../middleware/utils.js";
 import {
   loginUserSchema,
   resetPaswwordSchema,
   signupUserSchema,
+  validateRequest,
 } from "../middleware/schemas.js";
 
 dotenv.config();

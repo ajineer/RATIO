@@ -3,6 +3,27 @@ import validator from "validator";
 
 // user controller schemas
 
+export const validateRequest = (schema) => (req, res, next) => {
+  const { error } = schema.validate(req.body || req.params, {
+    abortEarly: false,
+  });
+
+  if (error) {
+    return res
+      .status(400)
+      .json({ errors: error.details.map((err) => err.message) });
+  }
+  next();
+};
+
+export const getValidationErrors = (schema, data) => {
+  const { error } = schema.validate(data);
+  if (error) {
+    return result.error.details[0].message;
+  }
+  return "pass";
+};
+
 export const signupUserSchema = Joi.object({
   first_name: Joi.string()
     .trim()
@@ -10,11 +31,19 @@ export const signupUserSchema = Joi.object({
     .max(50)
     .regex(/^[A-Za-z]+(?: [A-Za-z]+)*$/)
     .required()
+    .custom((value, helpers) => {
+      if (value === null) {
+        return helpers.error("any.required");
+      }
+      console.log("schema value: ", value);
+      return value;
+    })
     .messages({
       "string.empty": "First name cannot be empty",
       "string.min": "First name must be at least 2 characters long",
       "string.max": "First name cannot exceed 50 characters",
       "string.pattern.base": "First name can only contain letters and spaces",
+      "string.base": "First name is required and cannot be null",
     }),
   last_name: Joi.string()
     .trim()
@@ -28,7 +57,11 @@ export const signupUserSchema = Joi.object({
       "string.max": "First name cannot exceed 50 characters",
       "string.pattern.base": "First name can only contain letters and spaces",
     }),
-  email: Joi.string().email().required(),
+  email: Joi.string().email().lowercase().trim().required().messages({
+    "string.empty": "Email is required",
+    "string.email": "Invalid email format.",
+    "any.required": "Email is required",
+  }),
   password: Joi.string()
     .custom((value, helpers) => {
       if (
@@ -53,7 +86,7 @@ export const signupUserSchema = Joi.object({
 });
 
 export const loginUserSchema = Joi.object({
-  email: Joi.string().email().required().empty("").messages({
+  email: Joi.string().email().lowercase().trim().required().messages({
     "string.empty": "Email is required",
     "string.email": "Invalid email format.",
     "any.required": "Email is required",

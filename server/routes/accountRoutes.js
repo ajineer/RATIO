@@ -1,6 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
-import { tokenRequired, validateRequest } from "../middleware/utils.js";
+import { tokenRequired } from "../middleware/utils.js";
 import {
   add_account,
   delete_account,
@@ -10,6 +10,7 @@ import {
 import {
   addAccountSchema,
   updateAccountSchema,
+  validateRequest,
 } from "../middleware/schemas.js";
 
 dotenv.config();

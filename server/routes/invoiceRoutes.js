@@ -6,10 +6,11 @@ import {
   pay_invoice,
   update_invoice,
 } from "../controllers/invoiceController.js";
-import { tokenRequired, validateRequest } from "../middleware/utils.js";
+import { tokenRequired } from "../middleware/utils.js";
 import {
   addInvoiceSchema,
   updateInvoiceSchema,
+  validateRequest,
 } from "../middleware/schemas.js";
 
 dotenv.config();

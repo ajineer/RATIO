@@ -5,8 +5,11 @@ import {
   get_transactions,
   reverse_transaction,
 } from "../controllers/transactionController.js";
-import { tokenRequired, validateRequest } from "../middleware/utils.js";
-import { addTransactionSchema } from "../middleware/schemas.js";
+import { tokenRequired } from "../middleware/utils.js";
+import {
+  addTransactionSchema,
+  validateRequest,
+} from "../middleware/schemas.js";
 
 dotenv.config();
 

@@ -21,17 +21,19 @@ export const hashPassword = async (password) => {
   return password_hash;
 };
 
-export const validateRequest = (schema) => (req, res, next) => {
-  const { error } = schema.validate(req.body || req.params, {
-    abortEarly: false,
-  });
+export const generateToken = (email, id) => {
+  try {
+    const privateKey = process.env.SECRET_KEY;
+    const access_token = jwt.sign({ email: email, id: id }, privateKey, {
+      algorithm: "HS256",
+      expiresIn: "3d",
+    });
 
-  if (error) {
-    return res
-      .status(400)
-      .json({ errors: error.details.map((err) => err.message) });
+    return access_token;
+  } catch (err) {
+    console.error("error: ", err);
+    return "";
   }
-  next();
 };
 
 export const tokenRequired = async (req, res, next) => {
@@ -79,46 +81,4 @@ export const revokeToken = async (req, res) => {
     sameSite: "Strict",
   });
   res.clearCookie("token");
-};
-export const generateToken = (email, id) => {
-  try {
-    const privateKey = process.env.SECRET_KEY;
-    const access_token = jwt.sign({ email: email, id: id }, privateKey, {
-      algorithm: "HS256",
-      expiresIn: "3d",
-    });
-
-    return access_token;
-  } catch (err) {
-    console.error("error: ", err);
-    return "";
-  }
-};
-
-/**
- *
- * @param {Object} validObject - The valid request body.
- * @param {Array} transformations - Functions to modify fields for invalid cases.
- * @returns {Array} - Array of invalid objects with descriptions.
- */
-
-export const generateInvalidCases = (validObject, transformations) => {
-  const cases = [];
-
-  Object.keys(validObject).forEach((key) => {
-    transformations.forEach((transform) => {
-      const invalidData = {
-        ...validObject,
-        [key]: transform(validObject[key]),
-      };
-      const invalidUserCase = {
-        description: `${key} ${transform.name.replace(/_/g, " ")}`,
-        data: { ...invalidData },
-        expectedStatus: 400,
-      };
-      cases.push({ ...invalidUserCase });
-    });
-  });
-
-  return cases;
 };
