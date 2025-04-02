@@ -10,12 +10,12 @@ const signup = {
 export const nameCases = [
   {
     description: "should fail because the first/last name is null",
-    expected: "First name is required and cannot be null",
+    expectedValue: "first_name must be a string",
     data: { ...signup, first_name: null },
   },
   {
     description: "should fail because the first/last name is too short",
-    expected: "First name must be at least 2 characters long",
+    expectedValue: "first_name must be at least 2 characters long",
     data: {
       ...signup,
       first_name: "b",
@@ -23,7 +23,7 @@ export const nameCases = [
   },
   {
     description: "should fail because the first/last name is too long",
-    expected: "First name cannot exceed 50 characters",
+    expectedValue: "first_name cannot exceed 50 characters",
     data: {
       ...signup,
       first_name: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
@@ -31,7 +31,7 @@ export const nameCases = [
   },
   {
     description: "should fail because the first/last name is a wrong type",
-    expected: "First name is required and cannot be null",
+    expectedValue: "first_name must be a string",
     data: {
       ...signup,
       first_name: 200366,
@@ -40,7 +40,7 @@ export const nameCases = [
   {
     description:
       "should fail because the first/last name contains invalid chars",
-    expected: "First name can only contain letters and spaces",
+    expectedValue: "first_name can only contain letters and spaces",
     data: {
       ...signup,
       first_name: "@dam",
@@ -49,7 +49,7 @@ export const nameCases = [
   {
     description:
       "should fail because the first/last name is missing altogether",
-    expected: "First name is required and cannot be null",
+    expectedValue: "first_name is required",
     data: {
       email: "userone@gmail.com",
       password: "Password123!",
@@ -62,7 +62,7 @@ export const nameCases = [
 export const emailCases = [
   {
     description: "should fail because email is missing",
-    expected: "Email is required",
+    expectedValue: "email is required",
     data: {
       first_name: "user",
       last_name: "one",
@@ -72,7 +72,7 @@ export const emailCases = [
   },
   {
     description: "should fail because email is missing domain",
-    expected: "Invalid email format",
+    expectedValue: "invalid email format",
     data: {
       ...signup,
       email: "userone@gmail",
@@ -80,7 +80,7 @@ export const emailCases = [
   },
   {
     description: "should fail because email is missing '@'",
-    expected: "Invalid email format",
+    expectedValue: "invalid email format",
     data: {
       ...signup,
       email: "userone@gmail",
@@ -88,7 +88,7 @@ export const emailCases = [
   },
   {
     description: "should fail because email is wrong type",
-    expected: "Email must be a string",
+    expectedValue: "email must be a string",
     data: {
       ...signup,
       email: 1234,
@@ -100,7 +100,7 @@ export const emailCases = [
 export const passwordCases = [
   {
     description: "should fail because password is missing",
-    expected: "Password is required",
+    expectedValue: "password is required",
     data: {
       first_name: "user",
       last_name: "one",
@@ -110,7 +110,7 @@ export const passwordCases = [
   },
   {
     description: "should fail because password is too short",
-    expected: "Password must be at least 8 characters long",
+    expectedValue: "password must be at least 8 characters long",
     data: {
       ...signup,
       password: "Pwd123@",
@@ -119,7 +119,7 @@ export const passwordCases = [
   {
     description:
       "should fail because password is missing required capital letter",
-    expected: "Password must have at least one uppercase letter",
+    expectedValue: "password must have at least one uppercase letter",
     data: {
       ...signup,
       password: "passwordd123@",
@@ -127,7 +127,7 @@ export const passwordCases = [
   },
   {
     description: "should fail because password is missing a symbol",
-    expected: "Password must have at least one special character",
+    expectedValue: "password must have at least one special character",
     data: {
       ...signup,
       password: "Password123",
@@ -135,7 +135,7 @@ export const passwordCases = [
   },
   {
     description: "should fail because password is missing a required number",
-    expected: "Password must have at least one number",
+    expectedValue: "password must have at least one number",
     data: {
       ...signup,
       password: "Password!",
@@ -143,7 +143,7 @@ export const passwordCases = [
   },
   {
     description: "should fail because confirm password is missing",
-    expected: "Passwords must match",
+    expectedValue: "passwords must match",
     data: {
       first_name: "user",
       last_name: "one",
@@ -154,7 +154,7 @@ export const passwordCases = [
   },
   {
     description: "should fail because confirm password doesn't match password",
-    expected: "Passwords must match",
+    expectedValue: "passwords must match",
     data: {
       first_name: "user",
       last_name: "one",

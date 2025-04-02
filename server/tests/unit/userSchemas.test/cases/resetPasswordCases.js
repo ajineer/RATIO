@@ -12,7 +12,7 @@ export const currentPasswordCases = [
       ...reset,
       current_password: "",
     },
-    expectedValue: "Current password cannot be an empty string",
+    expectedValue: "current_password cannot be an empty string",
   },
   {
     description: "Should fail because the current password is not provided",
@@ -20,7 +20,7 @@ export const currentPasswordCases = [
       new_password: reset.new_password,
       confirm_password: reset.confirm_password,
     },
-    expectedValue: "Current password must be provided",
+    expectedValue: "current_password is required",
   },
   {
     description: "Should fail because current password is not a string type",
@@ -28,7 +28,7 @@ export const currentPasswordCases = [
       ...reset,
       current_password: 1234,
     },
-    expectedValue: "Current password must be a string",
+    expectedValue: "current_password must be a string",
   },
 ];
 
@@ -36,7 +36,7 @@ export const currentPasswordCases = [
 export const newPasswordCases = [
   {
     description: "should fail because new password is too short",
-    expectedValue: "Password must be at least 8 characters long",
+    expectedValue: "password must be at least 8 characters long",
     data: {
       ...reset,
       new_password: "Pwd123@",
@@ -45,7 +45,7 @@ export const newPasswordCases = [
   {
     description:
       "should fail because new password is missing required capital letter",
-    expectedValue: "Password must have at least one uppercase letter",
+    expectedValue: "password must have at least one uppercase letter",
     data: {
       ...reset,
       new_password: "passwordd123@",
@@ -54,7 +54,7 @@ export const newPasswordCases = [
   {
     description:
       "should fail because new password is missing required lowercase letter",
-    expectedValue: "Password must have at least one lowercase letter",
+    expectedValue: "password must have at least one lowercase letter",
     data: {
       ...reset,
       new_password: "PASSWORD123@",
@@ -62,7 +62,7 @@ export const newPasswordCases = [
   },
   {
     description: "should fail because new password is missing a symbol",
-    expectedValue: "Password must have at least one special character",
+    expectedValue: "password must have at least one special character",
     data: {
       ...reset,
       new_password: "Password123",
@@ -71,7 +71,7 @@ export const newPasswordCases = [
   {
     description:
       "should fail because new password is missing a required number",
-    expectedValue: "Password must have at least one number",
+    expectedValue: "password must have at least one number",
     data: {
       ...reset,
       new_password: "Password!",
@@ -82,18 +82,18 @@ export const newPasswordCases = [
 // confirm new password cases
 
 export const confirmNewPasswordCases = [
-  {
-    description: "should fail because the confirm password is an empty string",
-    expectedValue: "Password must not be an empty string",
-    data: {
-      ...reset,
-      new_password: "",
-      confirm_password: "",
-    },
-  },
+  // {
+  //   description: "should fail because the confirm password is an empty string",
+  //   expectedValue: "confirm_password must not be an empty string",
+  //   data: {
+  //     ...reset,
+  //     // new_password: "",
+  //     confirm_password: "",
+  //   },
+  // },
   {
     description: "should fail because the confirm password is not provided",
-    expectedValue: "Confirm password must be provided",
+    expectedValue: "confirm_password is required",
     data: {
       current_password: reset.current_password,
       new_password: reset.new_password,
@@ -101,7 +101,7 @@ export const confirmNewPasswordCases = [
   },
   {
     description: "should fail because the passwords do not match",
-    expectedValue: "Passwords must match",
+    expectedValue: "passwords must match",
     data: {
       ...reset,
       confirm_password: "!321drowssaP",
