@@ -44,6 +44,7 @@ export const signupUserSchema = Joi.object({
       "string.max": "First name cannot exceed 50 characters",
       "string.pattern.base": "First name can only contain letters and spaces",
       "string.base": "First name is required and cannot be null",
+      "any.required": "First name is required and cannot be null",
     }),
   last_name: Joi.string()
     .trim()
@@ -59,72 +60,112 @@ export const signupUserSchema = Joi.object({
     }),
   email: Joi.string().email().lowercase().trim().required().messages({
     "string.empty": "Email is required",
-    "string.email": "Invalid email format.",
+    "string.email": "Invalid email format",
     "any.required": "Email is required",
+    "string.base": "Email must be a string",
   }),
   password: Joi.string()
+    .required()
     .custom((value, helpers) => {
-      if (
-        !validator.isStrongPassword(value, {
-          minLength: 8,
-          minLowercase: 1,
-          minUppercase: 1,
-          minNumbers: 1,
-          minSymbols: 1,
-        })
-      ) {
-        return helpers.error("any.invalid");
+      const errors = [];
+
+      if (value.length < 8) {
+        errors.push("Password must be at least 8 characters long");
       }
+      if (!/[A-Z]/.test(value)) {
+        errors.push("Password must have at least one uppercase letter");
+      }
+      if (!/[a-z]/.test(value)) {
+        errors.push("Password must have at least one lowercase letter");
+      }
+      if (!/[0-9]/.test(value)) {
+        errors.push("Password must have at least one number");
+      }
+      if (!/[\W_]/.test(value)) {
+        errors.push("Password must have at least one special character");
+      }
+
+      if (errors.length > 0) {
+        return helpers.error("password.invalid", {
+          message: errors.join(", "),
+        });
+      }
+
       return value;
     }, "Password Validation")
-    .required()
     .messages({
-      anyinvalid:
-        "Password must be at least 8 characters long, include 1 uppercase letter, 1 number, and 1 special character.",
+      "string.base": "Password must be a string",
+      "any.required": "Password is required",
+      "password.invalid": "{{#message}}",
     }),
-  confirm_password: Joi.string().valid(Joi.ref("password")),
+  confirm_password: Joi.string().valid(Joi.ref("password")).messages({
+    "any.only": "Passwords must match",
+  }),
 });
 
 export const loginUserSchema = Joi.object({
   email: Joi.string().email().lowercase().trim().required().messages({
     "string.empty": "Email is required",
-    "string.email": "Invalid email format.",
+    "string.email": "Invalid email format",
     "any.required": "Email is required",
+    "string.base": "Email must be a string",
   }),
-  password: Joi.string().required().empty("").messages({
-    "string.empty": "Password is required",
+  password: Joi.string().required().empty().messages({
+    "string.empty": "Password string must not be empty",
     "any.required": "Password is required",
+    "string.base": "Password must be a string",
   }),
 });
 
 export const resetPaswwordSchema = Joi.object({
-  current_password: Joi.string().required(),
+  current_password: Joi.string().required().messages({
+    "string.empty": "Current password cannot be an empty string",
+    "any.required": "Current password must be provided",
+    "string.base": "Current password must be a string",
+  }),
   new_password: Joi.string()
+    .required()
+    .empty()
     .custom((value, helpers) => {
-      if (
-        !validator.isStrongPassword(value, {
-          minLength: 8,
-          minLowercase: 1,
-          minUppercase: 1,
-          minNumbers: 1,
-          minSymbols: 1,
-        })
-      ) {
-        return helpers.error("any.invalid");
+      const errors = [];
+
+      if (value.length < 8) {
+        errors.push("Password must be at least 8 characters long");
       }
+      if (!/[A-Z]/.test(value)) {
+        errors.push("Password must have at least one uppercase letter");
+      }
+      if (!/[a-z]/.test(value)) {
+        errors.push("Password must have at least one lowercase letter");
+      }
+      if (!/[0-9]/.test(value)) {
+        errors.push("Password must have at least one number");
+      }
+      if (!/[\W_]/.test(value)) {
+        errors.push("Password must have at least one special character");
+      }
+
+      if (errors.length > 0) {
+        return helpers.error("password.invalid", {
+          message: errors.join(", "),
+        });
+      }
+
       return value;
     }, "Password Validation")
-    .required()
     .messages({
-      anyinvalid:
-        "Password must be at least 8 characters long, include 1 uppercase letter, 1 number, and 1 special character.",
+      "string.base": "Password must be a string",
+      "any.required": "Password is required",
+      "string.empty": "Password must not be an empty string",
+      "password.invalid": "{{#message}}",
     }),
   confirm_password: Joi.string()
-    .valid(Joi.ref("new_password"))
     .required()
+    .valid(Joi.ref("new_password"))
     .messages({
-      "any.only": "Passwords must match.",
-      "any.required": "Confirm password is required.",
+      "any.only": "Passwords must match",
+      "string.empty": "Confirm password cannot be an empty string",
+      "any.required": "Confirm password must be provided",
     }),
 });
 
@@ -138,10 +179,11 @@ export const addAccountSchema = Joi.object({
     .regex(/^[A-Za-z]+(?: [A-Za-z]+)*$/)
     .required()
     .messages({
-      "string.empty": "First name cannot be empty",
-      "string.min": "First name must be at least 2 characters long",
-      "string.max": "First name cannot exceed 50 characters",
-      "string.pattern.base": "First name can only contain letters and spaces",
+      "string.empty": "Account name cannot be empty",
+      "string.min": "Account name must be at least 2 characters long",
+      "string.max": "Account name cannot exceed 50 characters",
+      "string.pattern.base": "Account name can only contain letters and spaces",
+      "string.base": "Account name must be a string",
     }),
   type: Joi.string()
     .valid("checking", "savings", "credit", "loan", "bill")
