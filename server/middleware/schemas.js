@@ -216,7 +216,7 @@ export const addInvoiceSchema = Joi.object({
     .strict()
     .messages(message_bodies.boolean_body("recurring")),
   next_due_date: Joi.date()
-    .min(new Date())
+    .min(new Date().setHours(0, 0, 0, 0))
     .required()
     .strict()
     .messages(message_bodies.date_body("next_due_date")),
@@ -227,19 +227,47 @@ export const addInvoiceSchema = Joi.object({
 });
 
 export const updateInvoiceSchema = Joi.object({
-  amount_due: Joi.number().precision(2).min(0).required(),
-  recurring: Joi.boolean().required(),
-  next_due_date: Joi.date().required(),
+  amount_due: Joi.number()
+    .precision(2)
+    .min(0)
+    .required()
+    .messages(message_bodies.balance_body("amount_due")),
+  recurring: Joi.boolean()
+    .required()
+    .strict()
+    .messages(message_bodies.boolean_body("recurring")),
+  next_due_date: Joi.date()
+    .min(new Date().setHours(0, 0, 0, 0))
+    .required()
+    .strict()
+    .messages(message_bodies.date_body("next_due_date")),
   frequency: Joi.string()
     .valid("daily", "weekly", "monthly", "annually")
-    .required(),
+    .required()
+    .messages(message_bodies.frequency_body),
 });
 
 // transaction controller schemas
 
 export const addTransactionSchema = Joi.object({
-  account_id: Joi.string().uuid().required(),
-  amount: Joi.number().required().precision(2).min(0).required(),
-  description: Joi.string().optional(),
-  status: Joi.string().valid("pending", "completed", "reversed").required(),
+  account_id: Joi.string()
+    .uuid()
+    .required()
+    .messages({
+      ...message_bodies.name_body("account_id"),
+      "string.guid": "account_id must be a valid GUID",
+    }),
+  amount: Joi.number()
+    .required()
+    .precision(2)
+    .min(0)
+    .required()
+    .messages(message_bodies.balance_body("amount")),
+  description: Joi.string()
+    .optional()
+    .messages(message_bodies.description_body),
+  status: Joi.string()
+    .valid("pending", "completed", "reversed")
+    .required()
+    .messages(message_bodies.transaction_status_body),
 });

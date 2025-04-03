@@ -64,4 +64,10 @@ export const message_bodies = {
     "any.only":
       "frequency must be one of the following: 'daily', 'weekly', 'monthly', 'annually'",
   },
+  transaction_status_body: {
+    "string.base": generic_messages("string.base", "status"),
+    "any.required": generic_messages("any.required", "status"),
+    "any.only":
+      "status must be one of the following: 'pending', 'complete', 'reversed'",
+  },
 };

@@ -3,13 +3,13 @@ import {
   addInvoiceAmountDueCases,
   addInvoiceDueDateCases,
   addInvoiceFrequencyCases,
-  addInvoiceNameCases,
+  addInvoiceAccountIdCases,
   addInvoiceRecurringCases,
 } from "./cases";
 import { addInvoiceSchema } from "../../../middleware/schemas";
 
 describe("New invoice schema tests", () => {
-  addInvoiceNameCases.forEach(({ description, data, expectedValue }) => {
+  addInvoiceAccountIdCases.forEach(({ description, data, expectedValue }) => {
     it(description, () => {
       const { error } = addInvoiceSchema.validate(data);
       expect(error).toBeDefined();
