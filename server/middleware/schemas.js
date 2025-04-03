@@ -199,13 +199,31 @@ export const updateAccountSchema = Joi.object({
 // invoice controller schema
 
 export const addInvoiceSchema = Joi.object({
-  account_id: Joi.string().uuid().required(),
-  amount_due: Joi.number().precision(2).min(0).required(),
-  recurring: Joi.boolean().required(),
-  next_due_date: Joi.date().required(),
+  account_id: Joi.string()
+    .uuid()
+    .required()
+    .messages({
+      ...message_bodies.name_body("account_id"),
+      "string.guid": "account_id must be a valid GUID",
+    }),
+  amount_due: Joi.number()
+    .precision(2)
+    .min(0)
+    .required()
+    .messages(message_bodies.balance_body("amount_due")),
+  recurring: Joi.boolean()
+    .required()
+    .strict()
+    .messages(message_bodies.boolean_body("recurring")),
+  next_due_date: Joi.date()
+    .min(new Date())
+    .required()
+    .strict()
+    .messages(message_bodies.date_body("next_due_date")),
   frequency: Joi.string()
     .valid("daily", "weekly", "monthly", "annually")
-    .required(),
+    .required()
+    .messages(message_bodies.frequency_body),
 });
 
 export const updateInvoiceSchema = Joi.object({

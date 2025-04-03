@@ -6,7 +6,7 @@ import {
   newAccountNameCases,
   newAccountStartingBalanceCases,
   newAccountTypeCases,
-} from "./cases/addAccountCases";
+} from "./cases";
 
 describe("Account creation schema tests ", () => {
   //   [

@@ -6,21 +6,10 @@ const generics = (field) => ({
   "string.base": `${field} must be a string`,
   "any.required": `${field} is required`,
   "number.base": `${field} must be a number`,
+  "boolean.base": `${field} must be a boolean`,
+  "date.base": `${field} must be a valid date`,
+  "date.min": `${field} must be today or future date`,
 });
-//   name: Joi.string()
-//     .trim()
-//     .min(2)
-//     .max(50)
-//     .regex(/^[A-Za-z]+(?: [A-Za-z]+)*$/)
-//     .required()
-//     .messages(message_bodies.name_body("account_name")),
-//   type: Joi.string()
-//     .valid("checking", "savings", "credit", "loan", "bill")
-//     .required()
-//     .messages(),
-//   description: Joi.string().optional().messages(),
-//   starting_balance: Joi.number().precision(2).min(0).required().messages(),
-//   balance: Joi.number().precision(2).min(0).required().messages(),
 
 const generic_messages = (key, field) => generics(field)[key];
 export const message_bodies = {
@@ -60,4 +49,19 @@ export const message_bodies = {
     "any.required": generic_messages("any.required", field),
     "number.base": generic_messages("number.base", field),
   }),
+  boolean_body: (field) => ({
+    "boolean.base": generic_messages("boolean.base", field),
+    "any.required": generic_messages("any.required", field),
+  }),
+  date_body: (field) => ({
+    "date.base": generic_messages("date.base", field),
+    "any.required": generic_messages("any.required", field),
+    "date.min": generic_messages("date.min", field),
+  }),
+  frequency_body: {
+    "string.base": generic_messages("string.base", "frequency"),
+    "any.required": generic_messages("any.required", "frequency"),
+    "any.only":
+      "frequency must be one of the following: 'daily', 'weekly', 'monthly', 'annually'",
+  },
 };
