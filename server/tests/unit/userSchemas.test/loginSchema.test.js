@@ -9,12 +9,12 @@ describe("User login schema tests", () => {
       expect(error).toBeDefined();
       expect(error.details[0].message).toBe(expectedValue);
     });
-    passwordLoginCases.forEach(({ description, data, expectedValue }) => {
-      it(description, () => {
-        const { error } = loginUserSchema.validate(data);
-        expect(error).toBeDefined();
-        expect(error.details[0].message).toBe(expectedValue);
-      });
+  });
+  passwordLoginCases.forEach(({ description, data, expectedValue }) => {
+    it(description, () => {
+      const { error } = loginUserSchema.validate(data);
+      expect(error).toBeDefined();
+      expect(error.details[0].message).toBe(expectedValue);
     });
   });
 });

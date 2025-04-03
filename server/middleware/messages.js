@@ -5,7 +5,6 @@ const generics = (field) => ({
   "string.pattern.base": `${field} can only contain letters and spaces`,
   "string.base": `${field} must be a string`,
   "any.required": `${field} is required`,
-  "number.empty": `${field} cannot be empty`,
   "number.base": `${field} must be a number`,
 });
 //   name: Joi.string()
@@ -48,10 +47,10 @@ export const message_bodies = {
   }),
 
   account_type: {
-    "string.base": generic_messages("string.base", "type"),
-    "any.required": generic_messages("any.required", "type"),
+    "string.base": generic_messages("string.base", "account_type"),
+    "any.required": generic_messages("any.required", "account_type"),
     "any.only":
-      "type must be one of the following: 'checking', 'savings', 'credit', 'loan', 'bill'",
+      "account_type must be one of the following: 'checking', 'savings', 'credit', 'loan', 'bill'",
   },
   description_body: {
     "string.base": generic_messages("string.base", "description"),
@@ -59,7 +58,6 @@ export const message_bodies = {
 
   balance_body: (field) => ({
     "any.required": generic_messages("any.required", field),
-    "number.empty": generic_messages("number.empty", field),
     "number.base": generic_messages("number.base", field),
   }),
 };
