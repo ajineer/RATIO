@@ -22,6 +22,14 @@ export const nameCases = [
     },
   },
   {
+    description: "should fail because the first/last name is an empty string",
+    expectedValue: "first_name cannot be an empty string",
+    data: {
+      ...signup,
+      first_name: "",
+    },
+  },
+  {
     description: "should fail because the first/last name is too long",
     expectedValue: "first_name cannot exceed 50 characters",
     data: {

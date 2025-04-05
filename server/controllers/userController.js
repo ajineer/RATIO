@@ -15,10 +15,10 @@ export const signup = async (req, res) => {
 
     const userExists = await User.findOne({ where: { email } });
     if (userExists) {
-      return res.status(409).json({ error: "Email already in use" });
+      return res.status(409).json({ error: "email already in use" });
     }
     if (password !== confirm_password) {
-      return res.status(401).json({ error: "Passwords must match" });
+      return res.status(400).json({ error: "passwords must match" });
     }
 
     const newUser = await User.create({
@@ -28,37 +28,36 @@ export const signup = async (req, res) => {
       password_hash: password,
     });
 
-    if (!newUser) {
-      return res.status(400).json({ error: "User creation failed" });
-    }
-
     await oldPassword.create({
       user_id: newUser.id,
       old_password: newUser.password_hash,
     });
 
     return res.status(201).json({
-      message: "User created successfully, please login",
+      message: "user created successfully, please login",
     });
   } catch (error) {
-    return res.status(500).json({ error: `Internal server error: ${error}` });
+    return res.status(500).json({ error: "internal server error" });
   }
 };
 
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(401).json({ error: "unauthorized" });
+    }
 
     const user = await User.findOne({ where: { email } });
 
     if (!user) {
-      return res.status(404).json({ success: false, error: "User not found" });
+      return res.status(404).json({ success: false, error: "user not found" });
     }
 
     if (!user.password_hash) {
       return res
         .status(500)
-        .json({ success: false, error: "Password missing" });
+        .json({ success: false, error: "password missing" });
     }
 
     const match = await bcrypt.compare(password, user.password_hash);
@@ -66,7 +65,7 @@ export const login = async (req, res) => {
     if (!match) {
       return res
         .status(401)
-        .json({ success: false, error: "Incorrect email or password" });
+        .json({ success: false, error: "incorrect email or password" });
     }
 
     if (user.active_token) {
@@ -89,13 +88,13 @@ export const login = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Login successful",
+      message: "login successful",
       user: { id: user.id, email: email },
     });
   } catch (error) {
     return res
       .status(500)
-      .json({ success: false, error: "Internal server error" });
+      .json({ success: false, error: "internal server error" });
   }
 };
 

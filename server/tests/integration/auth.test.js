@@ -1,8 +1,8 @@
 import request from "supertest";
-import app from "../app.js";
+import app from "../../app.js";
 import { config } from "dotenv";
 import { describe, expect, it } from "vitest";
-import { generateInvalidCases } from "../middleware/utils.js";
+import { generateInvalidCases } from "../../middleware/utils.js";
 import Joi from "joi";
 
 config();
