@@ -14,5 +14,8 @@ export const mockRes = () => {
     res.body = data;
     return res;
   });
+  res.cookie = vi.fn().mockImplementation((data) => {
+    res.cookie = data || undefined;
+  });
   return res;
 };

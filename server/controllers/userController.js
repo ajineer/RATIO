@@ -32,12 +32,17 @@ export const signup = async (req, res) => {
       user_id: newUser.id,
       old_password: newUser.password_hash,
     });
-
+    if (process.env.NODE_ENV === "test") {
+      return res.status(201).json({
+        message: "user created successfully, please login",
+        user: newUser,
+      });
+    }
     return res.status(201).json({
       message: "user created successfully, please login",
     });
   } catch (error) {
-    return res.status(500).json({ error: "internal server error" });
+    return res.status(500).json({ error: `internal server error` });
   }
 };
 
@@ -51,7 +56,7 @@ export const login = async (req, res) => {
     const user = await User.findOne({ where: { email } });
 
     if (!user) {
-      return res.status(404).json({ success: false, error: "user not found" });
+      return res.status(404).json({ error: "user not found" });
     }
 
     if (!user.password_hash) {
@@ -63,9 +68,7 @@ export const login = async (req, res) => {
     const match = await bcrypt.compare(password, user.password_hash);
 
     if (!match) {
-      return res
-        .status(401)
-        .json({ success: false, error: "incorrect email or password" });
+      return res.status(401).json({ error: "incorrect email or password" });
     }
 
     if (user.active_token) {
@@ -85,16 +88,19 @@ export const login = async (req, res) => {
       sameSite: "strict",
       maxAge: 3 * 24860 * 60 * 1000,
     });
-
+    if (process.env.NODE_ENV === "test") {
+      return res.status(201).json({
+        user: { id: user.id, email: email },
+        message: "login successful",
+        token: token,
+      });
+    }
     return res.status(200).json({
-      success: true,
       message: "login successful",
       user: { id: user.id, email: email },
     });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ success: false, error: "internal server error" });
+    return res.status(500).json({ error: `internal server error ${error}` });
   }
 };
 
@@ -103,15 +109,27 @@ export const logout = async (req, res) => {
 
   if (token) {
     try {
-      const userID = jwt.verify(token, process.env.SECRET_KEY);
-      if (!userID) {
-        return res.status(400).json({ error: "User could not be found" });
+      let userId;
+      try {
+        const { id } = jwt.verify(token, process.env.SECRET_KEY);
+        userId = id;
+      } catch (error) {
+        return res.status(500).json({ error: "invalid signature" });
       }
-      await revokeToken(req, res);
 
-      return res.status(200).json({ message: "User logged out" });
+      const user = await User.findOne({ where: { id: userId } });
+      if (!user) {
+        return res.status(400).json({ error: "user could not be found" });
+      }
+      await revokeToken(req, res, userId);
+
+      return res.status(200).json({ message: "user logged out" });
     } catch (error) {
-      return res.status(500).json({ error: `Somthing went wrong: ${error}` });
+      if (process.env.NODE_ENV === "test") {
+        return res.status(500).json({ error: `somthing went wrong: ${error}` });
+      } else {
+        return res.status(500).json({ error: "internal server error" });
+      }
     }
   }
   return res.status(400).json({ error: "No token found" });

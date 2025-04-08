@@ -2,7 +2,7 @@ import { DataTypes } from "sequelize";
 import sequelize from "../db.js";
 
 const expiredToken = sequelize.define(
-  "expired_token",
+  "expired_tokens",
   {
     id: {
       primaryKey: true,
@@ -17,7 +17,7 @@ const expiredToken = sequelize.define(
         model: "users",
         key: "id",
       },
-      onDelete: "CASCADE",
+      // onDelete: "CASCADE",
     },
     token: {
       type: DataTypes.STRING,

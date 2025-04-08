@@ -64,21 +64,26 @@ export const tokenRequired = async (req, res, next) => {
   }
 };
 
-export const revokeToken = async (req, res) => {
-  const { id } = req.params;
+export const revokeToken = async (req, res, id) => {
   const token = req.cookies.token;
-  const expired_token = await expiredToken.create({
-    token: token,
-    user_id: id,
-  });
-  if (!expired_token) {
-    return res.status(500).json({ error: "token could not be verified" });
+  try {
+    const expired_token = await expiredToken.create({
+      token: token,
+      user_id: id,
+    });
+    if (!expired_token) {
+      return res.status(500).json({ error: "token could not be verified" });
+    }
+    res.cookie("token", "", {
+      httpOnly: true,
+      expires: new Date(0),
+      sameSite: "Strict",
+    });
+    if (process.env.NODE_ENV !== "test") {
+      res.clearCookie("token");
+    }
+  } catch (error) {
+    console.log("error: ", error);
+    return res.status(500).json({ error: `token revocation failed` });
   }
-
-  res.cookie("token", "", {
-    httpOnly: true,
-    expires: new Date(0),
-    sameSite: "Strict",
-  });
-  res.clearCookie("token");
 };

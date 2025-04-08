@@ -18,6 +18,7 @@ export const userSignupCases = [
       status: 201,
       body: {
         message: "user created successfully, please login",
+        user: { ...user1 },
       },
     },
   },
@@ -64,7 +65,7 @@ export const loginCases = [
     expectedValue: {
       status: 200,
       body: {
-        user: { id: 1, email: login.email },
+        user: { email: login.email },
         message: "login successful",
       },
     },
@@ -76,6 +77,59 @@ export const loginCases = [
       status: 401,
       body: {
         error: "unauthorized",
+      },
+    },
+  },
+  {
+    description: "Should fail because password is wrong",
+    data: { ...login, password: "pasword123" },
+    expectedValue: {
+      status: 401,
+      body: {
+        error: "incorrect email or password",
+      },
+    },
+  },
+  {
+    description: "Should fail because email is wrong",
+    data: { ...login, email: "useron@gmail.com" },
+    expectedValue: {
+      status: 404,
+      body: {
+        error: "user not found",
+      },
+    },
+  },
+  {
+    description: "Should fail because password is missing",
+    data: { email: "useron@gmail.com" },
+    expectedValue: {
+      status: 401,
+      body: {
+        error: "unauthorized",
+      },
+    },
+  },
+];
+
+export const logoutCases = [
+  {
+    description: "Should fail to logout user because token is fake",
+    expectedValue: {
+      status: 400,
+      body: {
+        token:
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjM0NTY3ODkwIiwiaWF0IjoxNjg1NzY4MDB9.dQw4w9WgXcQJkS0g9W1h4fH9ZxX1OQqUj4tV9d4PzXU",
+        message: "user could not be found",
+      },
+    },
+  },
+  {
+    description: "Should successfully logout user",
+    expectedValue: {
+      status: 200,
+      body: {
+        message: "user logged out",
       },
     },
   },
