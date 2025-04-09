@@ -104,6 +104,7 @@ export const login = async (req, res) => {
   }
 };
 
+// logout controller
 export const logout = async (req, res) => {
   const token = req.cookies.token;
 
@@ -132,71 +133,103 @@ export const logout = async (req, res) => {
       }
     }
   }
-  return res.status(400).json({ error: "No token found" });
+  return res.status(400).json({ error: "unauthorized" });
 };
 
+// reset password controller
 export const resetPassword = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { current_password, new_password, confirm_password } = req.body;
-    // Find the user by email
-    const user = await User.findOne({ where: { id } });
+  const token = req.cookies.token;
+  if (token) {
+    try {
+      let userId;
+      try {
+        const { id } = jwt.decode(token, process.env.SECRET_KEY);
+        userId = id;
+      } catch (error) {
+        return res.statsu(500).json({ error: "invalid signature" });
+      }
+      const { current_password, new_password, confirm_password } = req.body;
+      // Find the user by email
+      const user = await User.findOne({ where: { id: userId } });
 
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
 
-    // Check if the current password is correct
-    const isMatch = await bcrypt.compare(current_password, user.password_hash);
+      console.log("passwords: ", current_password, user.password_hash);
 
-    if (!isMatch) {
-      return res.status(401).json({ error: "Incorrect current password" });
-    }
-
-    const OldPasswords = await oldPassword.findAll({
-      where: { user_id: user.id },
-      limit: 3,
-      order: [["created_at", "DESC"]],
-    });
-
-    if (OldPasswords.length > 2) {
-      await oldPassword.destroy({
-        where: { id: OldPasswords[OldPasswords.length - 1].id },
-      });
-    }
-    const isOldPassword = await Promise.all(
-      OldPasswords.map(async (oldPasswordRecord) => {
-        return await bcrypt.compare(
-          new_password,
-          oldPasswordRecord.old_password
+      // Check if the current password is correct
+      try {
+        const isMatch = await bcrypt.compare(
+          current_password,
+          user.password_hash
         );
-      })
-    );
-    if (isOldPassword.includes(true)) {
-      return res.status(401).json({
-        error: "New password cannot be any of your last 10 passwords",
+        if (!isMatch) {
+          return res.status(401).json({ error: "incorrect current password" });
+        }
+      } catch (error) {
+        if (process.env.NODE_ENV === "test") {
+          return res.status(500).json({ error: `bcrypt error: ${error}` });
+        } else {
+          return res.status(500).json({ error: "internal server error" });
+        }
+      }
+
+      if (new_password !== confirm_password) {
+        return res.status(400).json({ error: "passwords must match" });
+      }
+      const OldPasswords = await oldPassword.findAll({
+        where: { user_id: userId },
+        limit: 3,
+        order: [["created_at", "DESC"]],
       });
-    }
 
-    // Update the user's password
-    await user.update({
-      password_hash: new_password,
-    });
+      if (OldPasswords.length > 2) {
+        await oldPassword.destroy({
+          where: { id: OldPasswords[OldPasswords.length - 1].id },
+        });
+      }
+      const isOldPassword = await Promise.all(
+        OldPasswords.map(async (oldPasswordRecord) => {
+          return await bcrypt.compare(
+            new_password,
+            oldPasswordRecord.old_password
+          );
+        })
+      );
+      if (isOldPassword.includes(true)) {
+        return res.status(401).json({
+          error: "new password cannot be any of your last 10 passwords",
+        });
+      }
 
-    const find_old_password = await oldPassword.findOne({
-      where: { user_id: user.id, old_password: user.password_hash },
-    });
-
-    if (!find_old_password) {
-      await oldPassword.create({
-        user_id: user.id,
-        old_password: user.password_hash,
+      // Update the user's password
+      await user.update({
+        password_hash: new_password,
       });
+
+      const find_old_password = await oldPassword.findOne({
+        where: { user_id: userId, old_password: user.password_hash },
+      });
+
+      if (!find_old_password) {
+        await oldPassword.create({
+          user_id: userId,
+          old_password: user.password_hash,
+        });
+      }
+      revokeToken(req, res, userId);
+      return res.status(200).json({ message: "password updated successfully" });
+    } catch (error) {
+      if (process.env.NODE_ENV === "test") {
+        return res
+          .status(500)
+          .json({ error: `internal server error: ${error}` });
+      } else {
+        return res.status(500).json({ error: "internal server error" });
+      }
     }
-    revokeToken(req, res);
-    return res.status(200).json({ message: "Password updated successfully" });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: "Internal server error" });
+  } else {
+    return res.status(400).json({ error: "unauthorized" });
   }
 };

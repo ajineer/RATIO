@@ -1,19 +1,16 @@
+import { describe, it, expect, afterAll, beforeAll, vi } from "vitest";
 import {
-  describe,
-  it,
-  expect,
-  beforeEach,
-  afterEach,
-  afterAll,
-  beforeAll,
-  vi,
-} from "vitest";
-import { login, logout, signup } from "../../../controllers/userController.js";
+  login,
+  logout,
+  resetPassword,
+  signup,
+} from "../../../controllers/userController.js";
 import { loginCases, logoutCases, userSignupCases } from "./cases.js";
 import { mockRes } from "../testUtils.js";
 import sequelize from "../../../db.js";
 import User from "../../../models/User.js";
 
+// user signup tests
 describe("User signup test cases", () => {
   beforeAll(async () => {
     await sequelize.sync({ force: true });
@@ -39,6 +36,7 @@ describe("User signup test cases", () => {
   });
 });
 
+// user login test cases
 describe("User login test cases", async () => {
   let user = { id: null, email: null };
   beforeAll(async () => {
@@ -87,6 +85,7 @@ describe("User login test cases", async () => {
   });
 });
 
+// user logout tests
 describe("User logout cases", () => {
   let token;
   let user_id;
@@ -171,7 +170,6 @@ describe("User logout cases", () => {
     };
     const logoutRes = mockRes();
     await logout(logoutReq, logoutRes);
-    console.log("res: ", logoutRes);
     expect(logoutRes.status).toBe(400);
     expect(logoutRes.body.error).toBe("user could not be found");
   });
@@ -206,9 +204,68 @@ describe("User logout cases", () => {
     const logoutRes = mockRes();
     await logout(logoutReq, logoutRes);
     expect(logoutRes.status).toBe(400);
-    expect(logoutRes.body.error).toBe("No token found");
+    expect(logoutRes.body.error).toBe("unauthorized");
   });
   afterAll(async () => {
+    await sequelize.query('DELETE FROM "expired_tokens"');
+    await sequelize.query('DELETE FROM "users"');
+  });
+});
+
+// user password reset tests
+
+describe("User password reset cases", () => {
+  let token;
+  const signupBody = {
+    first_name: "user",
+    last_name: "four",
+    email: "userfour@gmail.com",
+    password: "Password234!",
+    confirm_password: "Password234!",
+  };
+  const loginBody = {
+    email: "userfour@gmail.com",
+    password: "Password234!",
+  };
+
+  beforeAll(async () => {
+    await sequelize.sync({ force: true });
+    const signupReq = {
+      body: {
+        ...signupBody,
+      },
+    };
+    const signupRes = mockRes();
+    await signup(signupReq, signupRes);
+
+    const loginReq = {
+      body: {
+        ...loginBody,
+      },
+    };
+    const loginRes = mockRes();
+    await login(loginReq, loginRes);
+    token = loginRes.body.token;
+  });
+
+  it("should should successfully reset the users password", async () => {
+    const restReq = {
+      body: {
+        current_password: loginBody.password,
+        new_password: "Password234@",
+        confirm_password: "Password234@",
+      },
+      cookies: { token },
+    };
+    const restRes = mockRes();
+
+    await resetPassword(restReq, restRes);
+    console.log("reset error: ", restRes.body.error);
+    expect(restRes.status).toBe(200);
+    expect(restRes.body.message).toBe("password updated successfully");
+  });
+  afterAll(async () => {
+    await sequelize.query('DELETE FROM "old_passwords"');
     await sequelize.query('DELETE FROM "expired_tokens"');
     await sequelize.query('DELETE FROM "users"');
   });

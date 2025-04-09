@@ -65,6 +65,7 @@ export const tokenRequired = async (req, res, next) => {
 };
 
 export const revokeToken = async (req, res, id) => {
+  console.log("response in utils: ", res);
   const token = req.cookies.token;
   try {
     const expired_token = await expiredToken.create({
@@ -83,7 +84,12 @@ export const revokeToken = async (req, res, id) => {
       res.clearCookie("token");
     }
   } catch (error) {
-    console.log("error: ", error);
-    return res.status(500).json({ error: `token revocation failed` });
+    if (process.env.NODE_ENV === "test") {
+      return res
+        .status(500)
+        .json({ error: `token revocation failed: ${error}` });
+    } else {
+      return res.status(500).json({ error: `token revocation failed` });
+    }
   }
 };
