@@ -10,6 +10,9 @@ import { mockRes } from "../testUtils.js";
 import sequelize from "../../../db.js";
 import User from "../../../models/User.js";
 
+const badToken =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjM0NTY3ODkwIiwiaWF0IjoxNjg1NzY4MDB9.dQw4w9WgXcQJkS0g9W1h4fH9ZxX1OQqUj4tV9d4PzXU";
+
 // user signup tests
 describe("User signup test cases", () => {
   beforeAll(async () => {
@@ -88,7 +91,6 @@ describe("User login test cases", async () => {
 // user logout tests
 describe("User logout cases", () => {
   let token;
-  let user_id;
   beforeAll(async () => {
     await sequelize.sync({ force: true });
 
@@ -104,7 +106,6 @@ describe("User logout cases", () => {
     const signupRes = mockRes();
     await signup(signupReq, signupRes);
     const user = await User.findOne({ where: { email: "userone@yahoo.com" } });
-    user_id = user.id;
     const loginReq = {
       body: {
         email: "userone@yahoo.com",
@@ -119,10 +120,8 @@ describe("User logout cases", () => {
   it("Should fail to logout user because the token is fake", async () => {
     const logoutReq = {
       cookies: {
-        token:
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjM0NTY3ODkwIiwiaWF0IjoxNjg1NzY4MDB9.dQw4w9WgXcQJkS0g9W1h4fH9ZxX1OQqUj4tV9d4PzXU",
+        token: badToken,
       },
-      user_id: user_id,
     };
     const logoutRes = mockRes();
     await logout(logoutReq, logoutRes);
@@ -132,7 +131,6 @@ describe("User logout cases", () => {
   it("Should successfully logout the user", async () => {
     const logoutReq = {
       cookies: { token },
-      user_id: user_id,
     };
     const logoutRes = mockRes();
     await logout(logoutReq, logoutRes);
@@ -173,6 +171,7 @@ describe("User logout cases", () => {
     expect(logoutRes.status).toBe(400);
     expect(logoutRes.body.error).toBe("user could not be found");
   });
+
   it("Should fail because there is no token", async () => {
     let token;
     const signupReq = {
@@ -215,17 +214,23 @@ describe("User logout cases", () => {
 // user password reset tests
 
 describe("User password reset cases", () => {
+  const password = "Password234!";
+  const new_password = "Password234@";
+  const new_password2 = "Password234#";
+  const email = "userfour@gmail.com";
   let token;
+
   const signupBody = {
     first_name: "user",
     last_name: "four",
-    email: "userfour@gmail.com",
-    password: "Password234!",
-    confirm_password: "Password234!",
+    email: email,
+    password: password,
+    confirm_password: password,
   };
+
   const loginBody = {
-    email: "userfour@gmail.com",
-    password: "Password234!",
+    email: email,
+    password: password,
   };
 
   beforeAll(async () => {
@@ -245,25 +250,138 @@ describe("User password reset cases", () => {
     };
     const loginRes = mockRes();
     await login(loginReq, loginRes);
+
     token = loginRes.body.token;
   });
 
-  it("should should successfully reset the users password", async () => {
+  it("Should fail because token is missing", async () => {
     const restReq = {
       body: {
-        current_password: loginBody.password,
-        new_password: "Password234@",
-        confirm_password: "Password234@",
+        current_password: password,
+        new_password: new_password,
+        confirm_password: new_password,
+      },
+      cookies: {},
+    };
+    const restRes = mockRes();
+
+    await resetPassword(restReq, restRes);
+    expect(restRes.status).toBe(400);
+    expect(restRes.body.error).toBe("unauthorized");
+  });
+
+  it("Should fail because token is invalid", async () => {
+    const restReq = {
+      body: {
+        current_password: password,
+        new_password: new_password,
+        confirm_password: new_password,
+      },
+      cookies: { token: badToken },
+    };
+
+    const restRes = mockRes();
+
+    await resetPassword(restReq, restRes);
+    expect(restRes.status).toBe(500);
+    expect(restRes.body.error).toBe("invalid signature");
+  });
+
+  it("should fail because the current password is incorrect", async () => {
+    const restReq = {
+      body: {
+        current_password: "something ain't right here",
+        new_password: "doesn't really matter now does it?",
+        confirm_password: "doesn't really matter now does it?",
+      },
+      cookies: { token },
+    };
+
+    const restRes = mockRes();
+
+    await resetPassword(restReq, restRes);
+
+    console.log("first password reset: ", restRes);
+
+    expect(restRes.status).toBe(400);
+    expect(restRes.body.error).toBe("incorrect current password");
+  });
+
+  it("should fail because new password and confirm password doesn't match", async () => {
+    const restReq = {
+      body: {
+        current_password: password,
+        new_password: new_password,
+        confirm_password: "huh?",
       },
       cookies: { token },
     };
     const restRes = mockRes();
 
     await resetPassword(restReq, restRes);
-    console.log("reset error: ", restRes.body.error);
+    expect(restRes.status).toBe(400);
+    expect(restRes.body.error).toBe("passwords must match");
+  });
+
+  it("should fail because the password has already been used", async () => {
+    const restReq = {
+      body: {
+        current_password: password,
+        new_password: new_password,
+        confirm_password: new_password,
+      },
+      cookies: { token },
+    };
+    const restRes = mockRes();
+
+    await resetPassword(restReq, restRes);
+
+    const loginBody2 = {
+      body: {
+        email: email,
+        password: new_password,
+      },
+    };
+
+    const loginRes2 = mockRes();
+    await login(loginBody2, loginRes2);
+
+    token = loginRes2.body.token;
+
+    const restReq2 = {
+      body: {
+        current_password: new_password,
+        new_password: password,
+        confirm_password: password,
+      },
+      cookies: { token },
+    };
+
+    const restRes2 = mockRes();
+    await resetPassword(restReq2, restRes2);
+    expect(restRes2.status).toBe(400);
+    expect(restRes2.body.error).toBe(
+      "new password cannot be any of your last 10 passwords"
+    );
+  });
+
+  it("should successfully reset the users password", async () => {
+    const restReq = {
+      body: {
+        current_password: new_password,
+        new_password: new_password2,
+        confirm_password: new_password2,
+      },
+      cookies: { token },
+    };
+    const restRes = mockRes();
+
+    await resetPassword(restReq, restRes);
+    console.log("successful pw reset res: ", restRes);
     expect(restRes.status).toBe(200);
     expect(restRes.body.message).toBe("password updated successfully");
   });
+
   afterAll(async () => {
     await sequelize.query('DELETE FROM "old_passwords"');
     await sequelize.query('DELETE FROM "expired_tokens"');

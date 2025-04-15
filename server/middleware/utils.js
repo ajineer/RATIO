@@ -16,8 +16,12 @@ const errorMessages = {
 };
 
 export const hashPassword = async (password) => {
+  if (process.env.NODE_ENV === "test") {
+    console.log("Password to hash: ", password);
+  }
   const salt = await bcrypt.genSalt(10);
   const password_hash = await bcrypt.hash(password, salt);
+  console.log("Hashed password: ", password_hash);
   return password_hash;
 };
 
@@ -48,7 +52,6 @@ export const tokenRequired = async (req, res, next) => {
     req.user = decoded;
     const id = req.user.id;
     const user = await User.findOne({ where: { id: id } });
-    // console.log("look here: ", user.active_token, "\n", token);
     if (!user) {
       return res.status(401).json({ error: "Unauthorized" });
     }
@@ -65,7 +68,6 @@ export const tokenRequired = async (req, res, next) => {
 };
 
 export const revokeToken = async (req, res, id) => {
-  console.log("response in utils: ", res);
   const token = req.cookies.token;
   try {
     const expired_token = await expiredToken.create({
