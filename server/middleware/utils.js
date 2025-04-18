@@ -16,12 +16,8 @@ const errorMessages = {
 };
 
 export const hashPassword = async (password) => {
-  if (process.env.NODE_ENV === "test") {
-    console.log("Password to hash: ", password);
-  }
   const salt = await bcrypt.genSalt(10);
   const password_hash = await bcrypt.hash(password, salt);
-  console.log("Hashed password: ", password_hash);
   return password_hash;
 };
 

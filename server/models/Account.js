@@ -49,9 +49,6 @@ const Account = sequelize.define(
         account.set("balance", account.starting_balance);
       },
     },
-    defaultScope: {
-      attributes: { exclude: ["user_id"] },
-    },
   }
 );
 

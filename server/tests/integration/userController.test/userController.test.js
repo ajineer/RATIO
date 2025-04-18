@@ -377,7 +377,6 @@ describe("User password reset cases", () => {
     const restRes = mockRes();
 
     await resetPassword(restReq, restRes);
-    console.log("successful pw reset res: ", restRes);
     expect(restRes.status).toBe(200);
     expect(restRes.body.message).toBe("password updated successfully");
   });
