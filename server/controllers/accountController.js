@@ -3,20 +3,27 @@ import Invoice from "../models/invoice.js";
 import jwt from "jsonwebtoken";
 
 export const get_accounts = async (req, res) => {
-  let userId;
-  const user = req.body?.user;
-  userId = user.id;
-  if (!user || !userId) {
+  const { id: userId } = req.user;
+  if (!userId) {
     return res.status(400).json({ error: `user not found` });
   }
   try {
     const accounts = await Account.findAll({
       where: { user_id: userId },
+      raw: true,
+      attributes: [
+        "id",
+        "name",
+        "balance",
+        "starting_balance",
+        "type",
+        "description",
+      ],
     });
     if (accounts.length === 0) {
       return res.status(404).json({ error: "no accounts found for this user" });
     }
-    return res.status(200).json({ accounts });
+    return res.status(200).json([...accounts]);
   } catch (error) {
     if (process.env.NODE_ENV === "test") {
       console.log("internal server error: ", error);
@@ -30,12 +37,14 @@ export const get_accounts = async (req, res) => {
 
 export const add_account = async (req, res) => {
   const { name, starting_balance, balance, type, description } = req.body;
-  const user = req.user;
+  const { id: userId } = req.user;
 
-  const userId = user.id;
-
-  if (!user || Object.keys(user).length === 0) {
+  if (!userId) {
     return res.status(401).json({ error: "unauthorized" });
+  }
+
+  if (Object.keys(req.body).length === 0 || !req.body) {
+    return res.status(400).json({ error: "null or undefined body" });
   }
 
   try {
@@ -51,7 +60,8 @@ export const add_account = async (req, res) => {
     if (!new_account) {
       return res.status(400).json({ error: "account could not be created" });
     }
-    return res.status(201).json({ ...new_account });
+    const { user_id, ...account } = new_account.toJSON();
+    return res.status(201).json(account);
   } catch (error) {
     if (process.env.NODE_ENV === "test") {
       console.log("internal server error: ", error);
@@ -103,7 +113,7 @@ export const update_account = async (req, res) => {
 export const delete_account = async (req, res) => {
   const { id } = req.params;
   const accountId = id;
-  const userId = req.user?.id;
+  const { id: userId } = req.user;
 
   if (!userId) {
     return res.status(401).json({ error: "unauthorized" });

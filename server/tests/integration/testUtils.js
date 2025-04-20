@@ -61,7 +61,7 @@ export const addAccount = async (data) => {
   const addAccountRes = mockRes();
 
   await add_account(addAccountReq, addAccountRes);
-  return addAccountRes.body.dataValues;
+  return addAccountRes.body;
 };
 
 export const beforeAllCallBack = async () => {

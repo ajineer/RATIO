@@ -1,11 +1,22 @@
 import Transaction from "../models/Transaction.js";
 import RecurringBill from "../models/RecurringBill.js";
 import Invoice from "../models/invoice.js";
+import dotenv from "dotenv";
+import Account from "../models/Account.js";
 
 export const add_invoice = async (req, res) => {
   const { account_id, recurring, next_due_date, frequency, amount_due } =
     req.body;
+  const { id: userId } = req.params;
+
   try {
+    const account = await Account.findOne({
+      where: { user_id: userId, id: account_id },
+    });
+    if (!account) {
+      return res.status(404).json({ error: "account not found" });
+    }
+
     const newInvoice = await Invoice.create({
       account_id: account_id,
       amount_due: amount_due,
@@ -15,11 +26,14 @@ export const add_invoice = async (req, res) => {
     });
 
     if (!newInvoice) {
-      return res.status(500).json({ error: "Could not add invoice" });
+      return res.status(500).json({ error: "could not add invoice" });
     }
-    return res.status(201).json({ newInvoice });
+    return res.status(201).json({ ...newInvoice });
   } catch (error) {
-    return res.status(500).json({ error: `Internal server error: ${error}` });
+    if (process.env.NODE_ENV === "test") {
+      console.log("internal server error: ", error);
+    }
+    return res.status(500).json({ error: `internal server error` });
   }
 };
 

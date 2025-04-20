@@ -23,9 +23,7 @@ describe("Retrieving accounts tests", () => {
 
   it("should fail because there is no user", async () => {
     const getAccountsReq = {
-      body: {
-        user: {},
-      },
+      user: {},
     };
 
     const getAccountsRes = mockRes();
@@ -39,9 +37,7 @@ describe("Retrieving accounts tests", () => {
 
   it("should fail because there are no accounts for the user", async () => {
     const getAccountsReq = {
-      body: {
-        user: { id: userId },
-      },
+      user: { id: userId },
     };
     const getAccountsRes = mockRes();
 
@@ -60,6 +56,14 @@ describe("Retrieving accounts tests", () => {
 });
 
 describe("Adding accounts test", () => {
+  const addAccountBody = {
+    name: "USAA",
+    description: "car insurance for the ru",
+    type: "bill",
+    starting_balance: 3400,
+    balance: 3400,
+  };
+  let accountArr = [];
   beforeAll(async () => {
     const user = await beforeAllCallBack();
     userId = user.id;
@@ -85,6 +89,62 @@ describe("Adding accounts test", () => {
 
     expect(status).toBe(401);
     expect(error).toBe("unauthorized");
+  });
+
+  it("Should fail because the body is invalid", async () => {
+    const addAccountReq = {
+      body: {},
+      user: { id: userId },
+    };
+
+    const addAccountRes = mockRes();
+
+    const {
+      status,
+      body: { error },
+    } = await add_account(addAccountReq, addAccountRes);
+
+    expect(status).toBe(400);
+    expect(error).toBe("null or undefined body");
+  });
+
+  it("Should successfully create a new account for the user", async () => {
+    const addAccountReq = {
+      body: { ...addAccountBody },
+      user: { id: userId },
+    };
+
+    const addAccountRes = mockRes();
+
+    const { status, body } = await add_account(addAccountReq, addAccountRes);
+
+    const { name, description, type, starting_balance, balance } = body;
+
+    expect(status).toBe(201);
+    expect(name).toBe(addAccountBody.name);
+    expect(description).toBe(addAccountBody.description);
+    expect(type).toBe(addAccountBody.type);
+    expect(starting_balance).toBe(addAccountBody.starting_balance);
+    expect(balance).toBe(addAccountBody.balance);
+    accountArr.push(body);
+  });
+
+  it("Should successfully retrieve the accounts for the user", async () => {
+    const getAccountsReq = { user: { id: userId } };
+    const getAccountRes = mockRes();
+    const { status, body: accounts } = await get_accounts(
+      getAccountsReq,
+      getAccountRes
+    );
+    const { name, description, type, starting_balance, balance } = accounts[0];
+
+    expect(status).toBe(200);
+    expect(accounts.length).toEqual(accountArr.length);
+    expect(name).toBe(accountArr[0].name);
+    expect(description).toBe(accountArr[0].description);
+    expect(type).toBe(accountArr[0].type);
+    expect(starting_balance).toBe(accountArr[0].starting_balance);
+    expect(balance).toBe(accountArr[0].balance);
   });
 
   afterAll(async () => {
@@ -113,6 +173,7 @@ describe("Updating account tests", () => {
     userId = user.id;
 
     account = await addAccount({ ...addAccountBody, user: user });
+    console.log("before account: ", account);
   });
 
   it("should fail because the account id is not provided", async () => {
@@ -132,6 +193,7 @@ describe("Updating account tests", () => {
   });
 
   it("should fail because account was deleted", async () => {
+    console.log("Account, id: ", account);
     await Account.destroy({ where: { id: account.id } });
     const updateAccountReq = {
       params: { id: account.id },
@@ -161,11 +223,10 @@ describe("Updating account tests", () => {
     };
     const addAccountRes2 = mockRes();
 
-    const {
-      body: { dataValues },
-    } = await add_account(addAccountReq2, addAccountRes2);
+    // const accountRes =
+    const { body } = await add_account(addAccountReq2, addAccountRes2);
+    const account2 = body;
 
-    const account2 = dataValues;
     const updateAccountReq = {
       params: { id: account2.id },
       body: { ...account2, description: "Flatiron loan" },
