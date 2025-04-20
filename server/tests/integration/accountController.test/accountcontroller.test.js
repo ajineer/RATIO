@@ -29,9 +29,12 @@ describe("Retrieving accounts tests", () => {
     };
 
     const getAccountsRes = mockRes();
-    await get_accounts(getAccountsReq, getAccountsRes);
-    expect(getAccountsRes.status).toBe(400);
-    expect(getAccountsRes.body.error).toBe("user not found");
+    const {
+      status,
+      body: { error },
+    } = await get_accounts(getAccountsReq, getAccountsRes);
+    expect(status).toBe(400);
+    expect(error).toBe("user not found");
   });
 
   it("should fail because there are no accounts for the user", async () => {
@@ -42,10 +45,13 @@ describe("Retrieving accounts tests", () => {
     };
     const getAccountsRes = mockRes();
 
-    await get_accounts(getAccountsReq, getAccountsRes);
+    const {
+      status,
+      body: { error },
+    } = await get_accounts(getAccountsReq, getAccountsRes);
 
-    expect(getAccountsRes.status).toBe(404);
-    expect(getAccountsRes.body.error).toBe("no accounts found for this user");
+    expect(status).toBe(404);
+    expect(error).toBe("no accounts found for this user");
   });
 
   afterAll(async () => {
@@ -72,10 +78,13 @@ describe("Adding accounts test", () => {
     };
     const addAccountRes = mockRes();
 
-    await add_account(addAccountReq, addAccountRes);
+    const {
+      status,
+      body: { error },
+    } = await add_account(addAccountReq, addAccountRes);
 
-    expect(addAccountRes.status).toBe(401);
-    expect(addAccountRes.body.error).toBe("unauthorized");
+    expect(status).toBe(401);
+    expect(error).toBe("unauthorized");
   });
 
   afterAll(async () => {
@@ -113,10 +122,13 @@ describe("Updating account tests", () => {
     };
 
     const updateAccountRes = mockRes();
-    await update_account(updateAccountReq, updateAccountRes);
+    const {
+      status,
+      body: { error },
+    } = await update_account(updateAccountReq, updateAccountRes);
 
-    expect(updateAccountRes.status).toBe(400);
-    expect(updateAccountRes.body.error).toBe("account id missing");
+    expect(status).toBe(400);
+    expect(error).toBe("account id missing");
   });
 
   it("should fail because account was deleted", async () => {
@@ -127,10 +139,13 @@ describe("Updating account tests", () => {
     };
     const updateAccountRes = mockRes();
 
-    await update_account(updateAccountReq, updateAccountRes);
+    const {
+      status,
+      body: { error },
+    } = await update_account(updateAccountReq, updateAccountRes);
 
-    expect(updateAccountRes.status).toBe(404);
-    expect(updateAccountRes.body.error).toBe("account not found");
+    expect(status).toBe(404);
+    expect(error).toBe("account not found");
   });
 
   it("should successfully update the account", async () => {
@@ -146,19 +161,25 @@ describe("Updating account tests", () => {
     };
     const addAccountRes2 = mockRes();
 
-    await add_account(addAccountReq2, addAccountRes2);
+    const {
+      body: { dataValues },
+    } = await add_account(addAccountReq2, addAccountRes2);
 
-    const account2 = addAccountRes2.body.dataValues;
+    const account2 = dataValues;
     const updateAccountReq = {
       params: { id: account2.id },
       body: { ...account2, description: "Flatiron loan" },
     };
     const updateAccountRes = mockRes();
 
-    await update_account(updateAccountReq, updateAccountRes);
-    const { description } = updateAccountRes.body.account;
+    const {
+      status,
+      body: {
+        account: { description },
+      },
+    } = await update_account(updateAccountReq, updateAccountRes);
 
-    expect(updateAccountRes.status).toBe(202);
+    expect(status).toBe(202);
     expect(description).toBe("Flatiron loan");
   });
 
@@ -188,30 +209,39 @@ describe("Delete account tests", () => {
     const deleteReq = { user: { id: userId }, params: {} };
     const deleteRes = mockRes();
 
-    await delete_account(deleteReq, deleteRes);
+    const {
+      status,
+      body: { error },
+    } = await delete_account(deleteReq, deleteRes);
 
-    expect(deleteRes.status).toBe(400);
-    expect(deleteRes.body.error).toBe("no account id provided");
+    expect(status).toBe(400);
+    expect(error).toBe("no account id provided");
   });
 
   it("Should fail because the user id is not provided", async () => {
     const deleteReq = { user: {}, params: { id: account.id } };
     const deleteRes = mockRes();
 
-    await delete_account(deleteReq, deleteRes);
+    const {
+      status,
+      body: { error },
+    } = await delete_account(deleteReq, deleteRes);
 
-    expect(deleteRes.status).toBe(401);
-    expect(deleteRes.body.error).toBe("unauthorized");
+    expect(status).toBe(401);
+    expect(error).toBe("unauthorized");
   });
 
   it("Should successfully delete the account", async () => {
     const deleteReq = { user: { id: userId }, params: { id: account.id } };
     const deleteRes = mockRes();
 
-    await delete_account(deleteReq, deleteRes);
+    const {
+      status,
+      body: { message },
+    } = await delete_account(deleteReq, deleteRes);
 
-    expect(deleteRes.status).toBe(202);
-    expect(deleteRes.body.message).toBe("account deleted");
+    expect(status).toBe(202);
+    expect(message).toBe("account deleted");
   });
 
   afterAll(async () => {

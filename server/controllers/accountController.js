@@ -34,7 +34,6 @@ export const add_account = async (req, res) => {
 
   const userId = user.id;
 
-  console.log("userId: ", userId);
   if (!user || Object.keys(user).length === 0) {
     return res.status(401).json({ error: "unauthorized" });
   }
