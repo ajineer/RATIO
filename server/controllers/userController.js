@@ -42,6 +42,9 @@ export const signup = async (req, res) => {
       message: "user created successfully, please login",
     });
   } catch (error) {
+    if (process.env.NODE_ENV === "test") {
+      console.log("internal server error: ", error);
+    }
     return res.status(500).json({ error: `internal server error` });
   }
 };
@@ -100,7 +103,10 @@ export const login = async (req, res) => {
       user: { id: user.id, email: email },
     });
   } catch (error) {
-    return res.status(500).json({ error: `internal server error ${error}` });
+    if (process.env.NODE_ENV === "test") {
+      console.log("internal server error: ", error);
+    }
+    return res.status(500).json({ error: `internal server error` });
   }
 };
 

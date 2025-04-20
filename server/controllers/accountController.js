@@ -32,8 +32,7 @@ export const add_account = async (req, res) => {
   const { name, starting_balance, balance, type, description } = req.body;
   const user = req.user;
 
-  let userId;
-  userId = user.id;
+  const userId = user.id;
 
   console.log("userId: ", userId);
   if (!user || Object.keys(user).length === 0) {
@@ -64,34 +63,65 @@ export const add_account = async (req, res) => {
 
 export const update_account = async (req, res) => {
   const { id } = req.params;
+  const accountId = id;
   const { name, type, description } = req.body;
+  if (!accountId) {
+    return res.status(400).json({ error: "account id missing" });
+  }
 
   try {
     const [updated_rows] = await Account.update(
       { name, type, description },
-      { where: { id } }
+      { where: { id: accountId } }
     );
 
     if (!updated_rows) {
-      return res.status(404).json({ error: "Account not found" });
+      return res.status(404).json({ error: "account not found" });
     }
 
-    const patched_account = await Account.findOne({ where: { id } });
-
-    return res.status(202).json({ patched_account });
+    const patched_account = await Account.findOne({
+      where: { id },
+      attributes: [
+        "id",
+        "name",
+        "description",
+        "type",
+        "balance",
+        "starting_balance",
+      ],
+    });
+    return res.status(202).json({
+      account: patched_account.get(),
+    });
   } catch (error) {
-    return res.status(500).json({ error: `Internal server error: ${error}` });
+    if (process.env.NODE_ENV === "test") {
+      console.log("internal server error: ", error);
+    }
+    return res.status(500).json({ error: `internal server error` });
   }
 };
 
 export const delete_account = async (req, res) => {
   const { id } = req.params;
+  const accountId = id;
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
+  if (!accountId) {
+    return res.status(400).json({ error: "no account id provided" });
+  }
 
   try {
-    await Account.destroy({ where: { id } });
+    await Account.destroy({ where: { id, user_id: userId } });
 
-    return res.status(202).json({ message: "Account deleted" });
+    return res.status(202).json({ message: "account deleted" });
   } catch (error) {
-    return res.status(500).json({ error: `Internal server error: ${error}` });
+    if (process.env.NODE_ENV === "test") {
+      console.log("internal server error: ", error);
+    }
+    return res.status(500).json({ error: `internal server error` });
   }
 };

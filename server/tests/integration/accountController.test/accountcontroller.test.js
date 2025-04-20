@@ -5,46 +5,20 @@ import {
   update_account,
   delete_account,
 } from "../../../controllers/accountController";
-import { login, signup } from "../../../controllers/userController";
-import { mockRes } from "../testUtils";
-import sequelize from "../../../db";
+import {
+  addAccount,
+  afterAllCallBack,
+  beforeAllCallBack,
+  mockRes,
+} from "../testUtils";
+import Account from "../../../models/Account";
 
-let token;
-const signupBody = {
-  body: {
-    first_name: "user",
-    last_name: "one",
-    email: "userone@gmail.com",
-    password: "Password123!",
-    confirm_password: "Password123!",
-  },
-};
-
-const loginBody = {
-  body: {
-    email: "userone@gmail.com",
-    password: "Password123!",
-  },
-};
+let userId;
 
 describe("Retrieving accounts tests", () => {
-  const signupReq = {
-    ...signupBody,
-  };
-
-  const signupRes = mockRes();
-
-  const loginReq = {
-    ...loginBody,
-  };
-
-  const loginRes = mockRes();
-
   beforeAll(async () => {
-    await sequelize.sync({ force: true });
-    await signup(signupReq, signupRes);
-    await login(loginReq, loginRes);
-    token = loginRes.body.token;
+    const user = await beforeAllCallBack();
+    userId = user.id;
   });
 
   it("should fail because there is no user", async () => {
@@ -61,8 +35,6 @@ describe("Retrieving accounts tests", () => {
   });
 
   it("should fail because there are no accounts for the user", async () => {
-    const user = loginRes.body.user;
-    const userId = user.id;
     const getAccountsReq = {
       body: {
         user: { id: userId },
@@ -77,36 +49,17 @@ describe("Retrieving accounts tests", () => {
   });
 
   afterAll(async () => {
-    await sequelize.query("DELETE FROM old_passwords");
-    await sequelize.query("DELETE FROM expired_tokens");
-    await sequelize.query("DELETE FROM users");
+    await afterAllCallBack(["expired_tokens", "users"]);
   });
 });
 
 describe("Adding accounts test", () => {
-  const signupReq = {
-    ...signupBody,
-  };
-
-  const signupRes = mockRes();
-
-  const loginReq = {
-    ...loginBody,
-  };
-
-  const loginRes = mockRes();
-  let user;
-
   beforeAll(async () => {
-    await sequelize.sync({ force: true });
-    await signup(signupReq, signupRes);
-    await login(loginReq, loginRes);
-    user = loginRes.body.user;
-    token = loginRes.body.token;
+    const user = await beforeAllCallBack();
+    userId = user.id;
   });
 
   it("should fail because the user is not attached to the request", async () => {
-    const id = user.id;
     const addAccountReq = {
       body: {
         name: "USAA",
@@ -125,40 +78,143 @@ describe("Adding accounts test", () => {
     expect(addAccountRes.body.error).toBe("unauthorized");
   });
 
-  it("should successfully add the account associated with the logged in user", async () => {
-    const id = user.id;
-    const newAccount = {
-      name: "USAA",
-      starting_balance: 1300,
-      balance: 1300,
-      type: "bill",
-      description: "car insurance for the ru",
+  afterAll(async () => {
+    await afterAllCallBack([
+      "old_passwords",
+      "expired_tokens",
+      "accounts",
+      "users",
+    ]);
+  });
+});
+
+describe("Updating account tests", () => {
+  let account;
+  const addAccountBody = {
+    user_id: userId,
+    name: "USAA",
+    description: "auto insurance for the ru",
+    starting_balance: 2375,
+    balance: 2375,
+    type: "bill",
+  };
+
+  beforeAll(async () => {
+    const user = await beforeAllCallBack();
+    userId = user.id;
+
+    account = await addAccount({ ...addAccountBody, user: user });
+  });
+
+  it("should fail because the account id is not provided", async () => {
+    const updateAccountReq = {
+      params: {},
+      body: { ...account },
     };
-    const addAccountReq = {
+
+    const updateAccountRes = mockRes();
+    await update_account(updateAccountReq, updateAccountRes);
+
+    expect(updateAccountRes.status).toBe(400);
+    expect(updateAccountRes.body.error).toBe("account id missing");
+  });
+
+  it("should fail because account was deleted", async () => {
+    await Account.destroy({ where: { id: account.id } });
+    const updateAccountReq = {
+      params: { id: account.id },
+      body: { balance: 1300, ...account },
+    };
+    const updateAccountRes = mockRes();
+
+    await update_account(updateAccountReq, updateAccountRes);
+
+    expect(updateAccountRes.status).toBe(404);
+    expect(updateAccountRes.body.error).toBe("account not found");
+  });
+
+  it("should successfully update the account", async () => {
+    const addAccountReq2 = {
+      user: { id: userId },
       body: {
-        ...newAccount,
+        name: "ascent",
+        description: "BIG mistake",
+        starting_balance: 25000,
+        balance: 25000,
+        type: "bill",
       },
-      user: { id: id },
     };
-    const addAccountRes = mockRes();
+    const addAccountRes2 = mockRes();
 
-    await add_account(addAccountReq, addAccountRes);
+    await add_account(addAccountReq2, addAccountRes2);
 
-    console.log("successful add account res: ", addAccountRes);
-    const { name, starting_balance, balance, type, description } =
-      addAccountRes.body.dataValues;
-    expect(addAccountRes.status).toBe(201);
-    expect(name).toBe(newAccount.name);
-    expect(starting_balance).toBe(newAccount.starting_balance);
-    expect(balance).toBe(newAccount.starting_balance);
-    expect(type).toBe(newAccount.type);
-    expect(description).toBe(newAccount.description);
+    const account2 = addAccountRes2.body.dataValues;
+    const updateAccountReq = {
+      params: { id: account2.id },
+      body: { ...account2, description: "Flatiron loan" },
+    };
+    const updateAccountRes = mockRes();
+
+    await update_account(updateAccountReq, updateAccountRes);
+    const { description } = updateAccountRes.body.account;
+
+    expect(updateAccountRes.status).toBe(202);
+    expect(description).toBe("Flatiron loan");
   });
 
   afterAll(async () => {
-    await sequelize.query("DELETE FROM old_passwords");
-    await sequelize.query("DELETE FROM expired_tokens");
-    await sequelize.query("DELETE FROM accounts");
-    await sequelize.query("DELETE FROM users");
+    await afterAllCallBack(["expired_tokens", "accounts", "users"]);
+  });
+});
+
+describe("Delete account tests", () => {
+  let account;
+  let addAccountBody = {
+    user_id: userId,
+    name: "USAA",
+    description: "auto insurance for the ru",
+    starting_balance: 2375,
+    balance: 2375,
+    type: "bill",
+  };
+
+  beforeAll(async () => {
+    const user = await beforeAllCallBack();
+    userId = user.id;
+    account = await addAccount({ ...addAccountBody, user: user });
+  });
+
+  it("Should fail because the account id is not provided", async () => {
+    const deleteReq = { user: { id: userId }, params: {} };
+    const deleteRes = mockRes();
+
+    await delete_account(deleteReq, deleteRes);
+
+    expect(deleteRes.status).toBe(400);
+    expect(deleteRes.body.error).toBe("no account id provided");
+  });
+
+  it("Should fail because the user id is not provided", async () => {
+    const deleteReq = { user: {}, params: { id: account.id } };
+    const deleteRes = mockRes();
+
+    await delete_account(deleteReq, deleteRes);
+
+    expect(deleteRes.status).toBe(401);
+    expect(deleteRes.body.error).toBe("unauthorized");
+  });
+
+  it("Should successfully delete the account", async () => {
+    const deleteReq = { user: { id: userId }, params: { id: account.id } };
+    const deleteRes = mockRes();
+
+    await delete_account(deleteReq, deleteRes);
+
+    expect(deleteRes.status).toBe(202);
+    expect(deleteRes.body.message).toBe("account deleted");
+  });
+
+  afterAll(async () => {
+    await afterAllCallBack(["expired_tokens", "accounts", "users"]);
   });
 });
