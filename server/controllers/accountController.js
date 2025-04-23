@@ -1,6 +1,6 @@
-import Account from "../models/Account.js";
-import Invoice from "../models/invoice.js";
-import jwt from "jsonwebtoken";
+import models from "../models/index.js";
+
+const { Account } = models;
 
 export const get_accounts = async (req, res) => {
   const { id: userId } = req.user;

@@ -6,17 +6,19 @@ import { router as transactionRoutes } from "./routes/transactionRoutes.js";
 import dotenv from "dotenv";
 import cors from "cors";
 import { corsOptions } from "./config/corsOptions.js";
-import sequelize from "./db.js";
+import db from "./models/index.js";
+const { sequelize, environment, dbConfig } = db;
 import cookieParser from "cookie-parser";
-import "./models/associations.js";
 dotenv.config();
 
 const app = express();
 
 sequelize
   .sync()
-  .then(() => console.log("Database synced"))
-  .catch((err) => console.error("Sync error: ", err));
+  .then(() => {
+    console.log(`Connected to ${dbConfig.dialect} database`);
+  })
+  .catch((error) => console.log("sync error: ", error));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

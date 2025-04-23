@@ -1,7 +1,8 @@
 import { vi } from "vitest";
 import { login, signup } from "../../controllers/userController";
 import { add_account } from "../../controllers/accountController";
-import sequelize from "../../db";
+import db from "../../db";
+const { sequelize } = db;
 
 export const mockRes = () => {
   const res = { status: null, body: null };

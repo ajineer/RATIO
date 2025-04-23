@@ -1,5 +1,7 @@
-import Transaction from "../models/Transaction.js";
-import { differenceInHours, getHours } from "date-fns";
+import { differenceInHours } from "date-fns";
+import models from "../models/index.js";
+
+const { Transaction } = models;
 
 export const get_transactions = async (req, res) => {
   const { id } = req.params;

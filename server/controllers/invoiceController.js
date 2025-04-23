@@ -1,18 +1,20 @@
-import Transaction from "../models/Transaction.js";
 import RecurringBill from "../models/RecurringBill.js";
-import Invoice from "../models/invoice.js";
-import dotenv from "dotenv";
-import Account from "../models/Account.js";
+import models from "../models/index.js";
+const { Transaction, Invoice, Account } = models;
 
 export const add_invoice = async (req, res) => {
   const { account_id, recurring, next_due_date, frequency, amount_due } =
     req.body;
-  const { id: userId } = req.params;
+  const { id: userId } = req.user;
 
+  if (!userId) {
+    return res.status(401).json({ error: "unauthorized" });
+  }
   try {
     const account = await Account.findOne({
-      where: { user_id: userId, id: account_id },
+      where: { id: account_id, user_id: userId },
     });
+
     if (!account) {
       return res.status(404).json({ error: "account not found" });
     }
@@ -25,10 +27,9 @@ export const add_invoice = async (req, res) => {
       frequency: frequency,
     });
 
-    if (!newInvoice) {
-      return res.status(500).json({ error: "could not add invoice" });
-    }
-    return res.status(201).json({ ...newInvoice });
+    const invoice = newInvoice.toJSON();
+
+    return res.status(201).json(invoice);
   } catch (error) {
     if (process.env.NODE_ENV === "test") {
       console.log("internal server error: ", error);
@@ -39,21 +40,63 @@ export const add_invoice = async (req, res) => {
 
 export const update_invoice = async (req, res) => {
   const { id } = req.params;
-  const { amount_due, recurring, next_due_date, frequency } = req.body;
+  const invoiceId = id;
+  const { id: userId } = req.user;
+  const { account_id, amount_due, recurring, next_due_date, frequency } =
+    req.body;
+
+  const requiredFields = {
+    account_id,
+    amount_due,
+    recurring,
+    next_due_date,
+    frequency,
+  };
+
+  if (!invoiceId) {
+    return res.status(400).json({ error: "invoice id is missing" });
+  }
+
+  if (!account_id) {
+    return res.status(400).json({ error: "account id is missing" });
+  }
+
+  for (const [key, value] of Object.entries(requiredFields)) {
+    if (value === undefined || value === null || value === "" || !value) {
+      return res.status(400).json({ error: "missing parameters" });
+    }
+  }
 
   try {
+    const data = await Invoice.findOne({
+      where: { id: invoiceId, account_id: account_id },
+      include: { model: Account },
+    });
+
+    const invoice = data.toJSON();
+    const { account: invoice_account } = invoice;
+    const { user_id: account_userId } = invoice_account;
+
+    if (!invoice) {
+      return res.status(404).json({ error: "invoice not found" });
+    }
+    if (account_userId !== userId) {
+      return res.status(403).json({ error: "unauthorized access" });
+    }
+
     const [updated_rows] = await Invoice.update(
       { amount_due, recurring, next_due_date, frequency },
-      { where: { id } }
+      { where: { id: invoiceId } }
     );
 
-    if (!updated_rows) {
-      return res.status(404).json({ error: "Invoice not found" });
-    }
-    const updated_invoice = await Invoice.findOne({ where: { id } });
+    const updated_invoice = await Invoice.findOne({ where: { id: invoiceId } });
+
     return res.status(202).json({ updated_invoice });
   } catch (error) {
-    return res.status(500).json({ error: `Internal server error ${error}` });
+    if (process.env.NODE_ENV === "test") {
+      console.log("internal server error: ", error);
+    }
+    return res.status(500).json({ error: `internal server error` });
   }
 };
 
