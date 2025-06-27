@@ -7,7 +7,7 @@ import oldPasswordModel from "./OldPassword.js";
 import TransactionModel from "./Transaction.js";
 import UserModel from "./User.js";
 import dotenv from "dotenv";
-import setupAssociations from "./associations";
+import setupAssociations from "./associations.js";
 
 dotenv.config();
 

@@ -77,3 +77,28 @@ export const afterAllCallBack = async (tables) => {
     tables.map((table) => sequelize.query(`DELETE FROM ${table}`))
   );
 };
+
+export const parseRes = (response = {}) => {
+  const { status = null, message = "", error = "", data = {} } = response;
+  return { status, message, ...data };
+};
+
+export const checkSumReq = (request, reqModel) => {
+  const data = request.body;
+  const missingFields = [];
+
+  for (const key of reqModel) {
+    if (data[key] === undefined || data[key] === null || data[key] === "") {
+      missingFields.push(key);
+    }
+  }
+
+  if (missingFields.length > 0) {
+    return {
+      valid: false,
+      error: `missing or empty required fields: ${missingFields.join(", ")}`,
+    };
+  }
+
+  return { valid: true };
+};

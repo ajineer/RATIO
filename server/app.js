@@ -1,8 +1,8 @@
 import express from "express";
-import { router as userRoutes } from "./routes/userRoutes.js";
-import { router as accountRoutes } from "./routes/accountRoutes.js";
-import { router as invoiceRoutes } from "./routes/invoiceRoutes.js";
-import { router as transactionRoutes } from "./routes/transactionRoutes.js";
+// import { router as userRoutes } from "./routes/userRoutes.js";
+// import { router as accountRoutes } from "./routes/accountRoutes.js";
+// import { router as invoiceRoutes } from "./routes/invoiceRoutes.js";
+// import { router as transactionRoutes } from "./routes/transactionRoutes.js";
 import dotenv from "dotenv";
 import cors from "cors";
 import { corsOptions } from "./config/corsOptions.js";
@@ -13,12 +13,12 @@ dotenv.config();
 
 const app = express();
 
-sequelize
-  .sync()
-  .then(() => {
-    console.log(`Connected to ${dbConfig.dialect} database`);
-  })
-  .catch((error) => console.log("sync error: ", error));
+// sequelize
+//   .sync()
+//   .then(() => {
+//     console.log(`Connected to ${dbConfig.dialect} database`);
+//   })
+//   .catch((error) => console.log("sync error: ", error));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -33,10 +33,10 @@ app.get("/", (req, res) => {
   res.send("Hello Ratio!");
 });
 
-app.use("/api/user", userRoutes);
-app.use("/api/accounts", accountRoutes);
-app.use("/api/invoices", invoiceRoutes);
-app.use("/api/transactions", transactionRoutes);
+// app.use("/api/user", userRoutes);
+// app.use("/api/accounts", accountRoutes);
+// app.use("/api/invoices", invoiceRoutes);
+// app.use("/api/transactions", transactionRoutes);
 
 const PORT =
   process.env.NODE_ENV === "development"
